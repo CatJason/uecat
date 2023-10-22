@@ -1,0 +1,53 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
+
+
+android {
+    compileSdkVersion versions.compileSdk
+
+    signingConfigs {
+        release {
+            storeFile file("../uetool.jks")
+            keyAlias 'uetool'
+            keyPassword 'uetool'
+            storePassword 'uetool'
+        }
+    }
+
+    defaultConfig {
+        applicationId "me.ele.uetool.sample"
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.google.android.material:material:1.8.0'
+
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
+    implementation "com.facebook.fresco:fresco:${versions.fresco}"
+    implementation "com.facebook.fresco:animated-gif:${versions.fresco}"
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'android.arch.lifecycle:extensions:1.1.1'
+
+    debugImplementation project(':uetool')
+    releaseImplementation project(':uetool-no-op')
+
+    compileOnly 'me.ele:lancet-base:1.0.6'
+
+    configurations.configureEach {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+}

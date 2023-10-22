@@ -1,0 +1,14 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+android {
+    compileSdkVersion versions.compileSdk
+
+    defaultConfig {
+        minSdkVersion versions.minSdk
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.8.0'
+}
