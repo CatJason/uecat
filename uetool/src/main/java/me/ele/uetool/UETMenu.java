@@ -16,6 +16,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
 import com.jakewharton.scalpel.ScalpelFrameLayout;
 
 import java.lang.reflect.Field;
@@ -23,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static me.ele.uetool.TransparentActivity.Type.TYPE_UNKNOWN;
+import static me.ele.uetool.UETMenuKotlinKt.getSubMenu;
+
+import androidx.annotation.NonNull;
 
 public class UETMenu extends LinearLayout {
 
@@ -40,6 +44,7 @@ public class UETMenu extends LinearLayout {
      * 容器刚出来的时候的宽度，用于播放动画
      */
     private int vSubMenuContainerWidth = 0;
+
     public UETMenu(final Context context, int y) {
         super(context);
         inflate(context, R.layout.uet_menu_layout, this);
@@ -73,29 +78,7 @@ public class UETMenu extends LinearLayout {
                     }
                 }));
 
-        subMenus.add(new UETSubMenu.SubMenu(resources.getString(R.string.uet_scalpel), R.drawable.uet_scalpel, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ViewGroup decorView = (ViewGroup) Util.getCurrentActivity().getWindow().getDecorView();
-                ViewGroup content = decorView.findViewById(android.R.id.content);
-                View contentChild = content.getChildAt(0);
-                if (contentChild != null) {
-                    if (contentChild instanceof ScalpelFrameLayout) {
-                        content.removeAllViews();
-                        View originContent = ((ScalpelFrameLayout) contentChild).getChildAt(0);
-                        ((ScalpelFrameLayout) contentChild).removeAllViews();
-                        content.addView(originContent);
-                    } else {
-                        content.removeAllViews();
-                        ScalpelFrameLayout frameLayout = new ScalpelFrameLayout(getContext());
-                        frameLayout.setLayerInteractionEnabled(true);
-                        frameLayout.setDrawIds(true);
-                        frameLayout.addView(contentChild);
-                        content.addView(frameLayout);
-                    }
-                }
-            }
-        }));
+        subMenus.add(getSubMenu(resources, getContext()));
 
         for (UETSubMenu.SubMenu subMenu : subMenus) {
             UETSubMenu uetSubMenu = new UETSubMenu(getContext());
@@ -137,7 +120,7 @@ public class UETMenu extends LinearLayout {
                                 field = object.getClass().getDeclaredField("mOnClickListener");
                                 field.setAccessible(true);
                                 object = field.get(object);
-                                if (object != null && object instanceof View.OnClickListener) {
+                                if (object instanceof OnClickListener) {
                                     ((View.OnClickListener) object).onClick(vMenu);
                                 }
                             } catch (Exception e) {

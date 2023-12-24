@@ -1,1 +1,2 @@
 include ':app', ':uetool', ':uetool-no-op'
+include ':scalpellibrary'
