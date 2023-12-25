@@ -1,497 +1,434 @@
-package com.jakewharton.scalpel;
+package com.jakewharton.scalpel
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.Resources.NotFoundException;
-import android.graphics.Camera;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.Typeface;
-import android.os.Build;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.util.SparseArray;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import java.util.ArrayDeque;
-import java.util.BitSet;
-import java.util.Deque;
-
-import static android.graphics.Paint.ANTI_ALIAS_FLAG;
-import static android.graphics.Paint.Style.STROKE;
-import static android.graphics.Typeface.NORMAL;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.view.MotionEvent.ACTION_DOWN;
-import static android.view.MotionEvent.ACTION_POINTER_UP;
-import static android.view.MotionEvent.INVALID_POINTER_ID;
+import android.content.Context
+import android.content.res.Resources
+import android.graphics.Camera
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import android.graphics.Rect
+import android.graphics.Typeface
+import android.os.Build
+import android.util.AttributeSet
+import android.util.Log
+import android.util.SparseArray
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import java.util.ArrayDeque
+import java.util.BitSet
+import java.util.Deque
 
 /**
  * Renders your view hierarchy as an interactive 3D visualization of layers.
- * <p>
+ *
+ *
  * Interactions supported:
- * <ul>
- * <li>Single touch: controls the rotation of the model.</li>
- * <li>Two finger vertical pinch: Adjust zoom.</li>
- * <li>Two finger horizontal pinch: Adjust layer spacing.</li>
- * </ul>
+ *
+ *  * Single touch: controls the rotation of the model.
+ *  * Two finger vertical pinch: Adjust zoom.
+ *  * Two finger horizontal pinch: Adjust layer spacing.
+ *
  */
-public class ScalpelFrameLayout extends FrameLayout {
-    private static final int TRACKING_UNKNOWN = 0;
-    private static final int TRACKING_VERTICALLY = 1;
-    private static final int TRACKING_HORIZONTALLY = -1;
-    private static final int ROTATION_MAX = 60;
-    private static final int ROTATION_MIN = -ROTATION_MAX;
-    private static final int ROTATION_DEFAULT_X = -10;
-    private static final int ROTATION_DEFAULT_Y = 15;
-    private static final float ZOOM_DEFAULT = 0.6f;
-    private static final float ZOOM_MIN = 0.33f;
-    private static final float ZOOM_MAX = 2f;
-    private static final int SPACING_DEFAULT = 25;
-    private static final int SPACING_MIN = 10;
-    private static final int SPACING_MAX = 100;
-    private static final int CHROME_COLOR = 0xFF888888;
-    private static final int CHROME_SHADOW_COLOR = 0xFF000000;
-    private static final int TEXT_OFFSET_DP = 2;
-    private static final int TEXT_SIZE_DP = 10;
-    private static final int CHILD_COUNT_ESTIMATION = 25;
-    private static final boolean DEBUG = false;
-
-    private static void log(String message, Object... args) {
-        Log.d("Scalpel", String.format(message, args));
-    }
-
-    private static class LayeredView {
-        View view;
-        int layer;
-
-        void set(View view, int layer) {
-            this.view = view;
-            this.layer = layer;
+class ScalpelFrameLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyle: Int = 0
+) : FrameLayout(context, attrs, defStyle) {
+    private class LayeredView {
+        var view: View? = null
+        var layer = 0
+        operator fun set(view: View?, layer: Int) {
+            this.view = view
+            this.layer = layer
         }
 
-        void clear() {
-            view = null;
-            layer = -1;
+        fun clear() {
+            view = null
+            layer = -1
         }
     }
 
-    private final Rect viewBoundsRect = new Rect();
-    private final Paint viewBorderPaint = new Paint(ANTI_ALIAS_FLAG);
-    private final Camera camera = new Camera();
-    private final Matrix matrix = new Matrix();
-    private final int[] location = new int[2];
-    private final BitSet visibilities = new BitSet(CHILD_COUNT_ESTIMATION);
-    private final SparseArray<String> idNames = new SparseArray<>();
-    private final Deque<LayeredView> layeredViewQueue = new ArrayDeque<>();
-    private final Pool<LayeredView> layeredViewPool = new Pool<LayeredView>(CHILD_COUNT_ESTIMATION) {
-        @Override protected LayeredView newObject() {
-            return new LayeredView();
-        }
-    };
-
-    private final Resources res;
-    private final float density;
-    private final float slop;
-    private final float textOffset;
-    private final float textSize;
-
-    private boolean enabled;
-    private boolean drawViews = true;
-    private boolean drawIds;
-
-    private int pointerOne = INVALID_POINTER_ID;
-    private float lastOneX;
-    private float lastOneY;
-    private int pointerTwo = INVALID_POINTER_ID;
-    private float lastTwoX;
-    private float lastTwoY;
-    private int multiTouchTracking = TRACKING_UNKNOWN;
-
-    private float rotationY = ROTATION_DEFAULT_Y;
-    private float rotationX = ROTATION_DEFAULT_X;
-    private float zoom = ZOOM_DEFAULT;
-    private float spacing = SPACING_DEFAULT;
-
-    private int chromeColor;
-    private int chromeShadowColor;
-
-    public ScalpelFrameLayout(Context context) {
-        this(context, null);
-    }
-
-    public ScalpelFrameLayout(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public ScalpelFrameLayout(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        res = context.getResources();
-        density = context.getResources().getDisplayMetrics().density;
-        slop = ViewConfiguration.get(context).getScaledTouchSlop();
-
-        textSize = TEXT_SIZE_DP * density;
-        textOffset = TEXT_OFFSET_DP * density;
-
-        setChromeColor(CHROME_COLOR);
-        viewBorderPaint.setStyle(STROKE);
-        viewBorderPaint.setTextSize(textSize);
-        setChromeShadowColor(CHROME_SHADOW_COLOR);
-        if (Build.VERSION.SDK_INT >= JELLY_BEAN) {
-            viewBorderPaint.setTypeface(Typeface.create("sans-serif-condensed", NORMAL));
+    private val viewBoundsRect = Rect()
+    private val viewBorderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val camera = Camera()
+    private val matrix = Matrix()
+    private val location = IntArray(2)
+    private val visibilities = BitSet(CHILD_COUNT_ESTIMATION)
+    private val idNames = SparseArray<String?>()
+    private val layeredViewQueue: Deque<LayeredView> = ArrayDeque()
+    private val layeredViewPool: Pool<LayeredView> = object : Pool<LayeredView>(
+        CHILD_COUNT_ESTIMATION
+    ) {
+        override fun newObject(): LayeredView {
+            return LayeredView()
         }
     }
-
-    /** Set the view border chrome color. */
-    public void setChromeColor(int color) {
-        if (chromeColor != color) {
-            viewBorderPaint.setColor(color);
-            chromeColor = color;
-            invalidate();
+    private val res: Resources
+    private val density: Float
+    private val slop: Float
+    private val textOffset: Float
+    private val textSize: Float
+    private var enabled = false
+    /** Returns true when view layers draw their contents.  */
+    var isDrawingViews = true
+        private set
+    /** Returns true when view layers draw their IDs.  */
+    var isDrawingIds = false
+        private set
+    private var pointerOne = MotionEvent.INVALID_POINTER_ID
+    private var lastOneX = 0f
+    private var lastOneY = 0f
+    private var pointerTwo = MotionEvent.INVALID_POINTER_ID
+    private var lastTwoX = 0f
+    private var lastTwoY = 0f
+    private var multiTouchTracking = TRACKING_UNKNOWN
+    private var rotationY = ROTATION_DEFAULT_Y.toFloat()
+    private var rotationX = ROTATION_DEFAULT_X.toFloat()
+    private var zoom = ZOOM_DEFAULT
+    private var spacing = SPACING_DEFAULT.toFloat()
+    private var lastInvalidateTime = 0L
+    /** Get the view border chrome color.  */
+    var chromeColor = 0
+        /** Set the view border chrome color.  */
+        set(color) {
+            if (chromeColor != color) {
+                viewBorderPaint.color = color
+                field = color
+                invalidate()
+            }
         }
-    }
+    /** Get the view border chrome shadow color.  */
+    var chromeShadowColor = 0
+        /** Set the view border chrome shadow color.  */
+        set(color) {
+            if (chromeShadowColor != color) {
+                viewBorderPaint.setShadowLayer(1f, -1f, 1f, color)
+                field = color
+                invalidate()
+            }
+        }
 
-    /** Get the view border chrome color. */
-    public int getChromeColor() {
-        return chromeColor;
-    }
-
-    /** Set the view border chrome shadow color. */
-    public void setChromeShadowColor(int color) {
-        if (chromeShadowColor != color) {
-            viewBorderPaint.setShadowLayer(1, -1, 1, color);
-            chromeShadowColor = color;
-            invalidate();
+    init {
+        res = context.resources
+        density = context.resources.displayMetrics.density
+        slop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+        textSize = TEXT_SIZE_DP * density
+        textOffset = TEXT_OFFSET_DP * density
+        chromeColor = CHROME_COLOR
+        viewBorderPaint.style = Paint.Style.STROKE
+        viewBorderPaint.textSize = textSize
+        chromeShadowColor = CHROME_SHADOW_COLOR
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            viewBorderPaint.typeface =
+                Typeface.create("sans-serif-condensed", Typeface.NORMAL)
         }
     }
 
-    /** Get the view border chrome shadow color. */
-    public int getChromeShadowColor() {
-        return chromeShadowColor;
-    }
+    var isLayerInteractionEnabled: Boolean
+        /** Returns true when 3D view layer interaction is enabled.  */
+        get() = enabled
+        /** Set whether or not the 3D view layer interaction is enabled.  */
+        set(enabled) {
+            if (this.enabled != enabled) {
+                this.enabled = enabled
+                setWillNotDraw(!enabled)
+                invalidate()
+            }
+        }
 
-    /** Set whether or not the 3D view layer interaction is enabled. */
-    public void setLayerInteractionEnabled(boolean enabled) {
-        if (this.enabled != enabled) {
-            this.enabled = enabled;
-            setWillNotDraw(!enabled);
-            invalidate();
+    /** Set whether the view layers draw their IDs.  */
+    fun setDrawIds(drawIds: Boolean) {
+        if (isDrawingIds != drawIds) {
+            isDrawingIds = drawIds
+            invalidate()
         }
     }
 
-    /** Returns true when 3D view layer interaction is enabled. */
-    public boolean isLayerInteractionEnabled() {
-        return enabled;
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        return enabled || super.onInterceptTouchEvent(ev)
     }
 
-    /** Set whether the view layers draw their contents. When false, only wireframes are shown. */
-    public void setDrawViews(boolean drawViews) {
-        if (this.drawViews != drawViews) {
-            this.drawViews = drawViews;
-            invalidate();
-        }
-    }
-
-    /** Returns true when view layers draw their contents. */
-    public boolean isDrawingViews() {
-        return drawViews;
-    }
-
-    /** Set whether the view layers draw their IDs. */
-    public void setDrawIds(boolean drawIds) {
-        if (this.drawIds != drawIds) {
-            this.drawIds = drawIds;
-            invalidate();
-        }
-    }
-
-    /** Returns true when view layers draw their IDs. */
-    public boolean isDrawingIds() {
-        return drawIds;
-    }
-
-    @Override public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return enabled || super.onInterceptTouchEvent(ev);
-    }
-
-    @Override public boolean onTouchEvent(@SuppressWarnings("NullableProblems") MotionEvent event) {
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         if (!enabled) {
-            return super.onTouchEvent(event);
+            return super.onTouchEvent(event)
         }
-
-        int action = event.getActionMasked();
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN: {
-                int index = (action == ACTION_DOWN) ? 0 : event.getActionIndex();
-                if (pointerOne == INVALID_POINTER_ID) {
-                    pointerOne = event.getPointerId(index);
-                    lastOneX = event.getX(index);
-                    lastOneY = event.getY(index);
-                    if (DEBUG) log("Got pointer 1!  id: %s  x: %s  y: %s", pointerOne, lastOneY, lastOneY);
-                } else if (pointerTwo == INVALID_POINTER_ID) {
-                    pointerTwo = event.getPointerId(index);
-                    lastTwoX = event.getX(index);
-                    lastTwoY = event.getY(index);
-                    if (DEBUG) log("Got pointer 2!  id: %s  x: %s  y: %s", pointerTwo, lastTwoY, lastTwoY);
-                } else {
-                    if (DEBUG) log("Ignoring additional pointer.  id: %s", event.getPointerId(index));
+        val action = event.actionMasked
+        when (action) {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
+                val index = if (action == MotionEvent.ACTION_DOWN) 0 else event.actionIndex
+                if (pointerOne == MotionEvent.INVALID_POINTER_ID) {
+                    pointerOne = event.getPointerId(index)
+                    lastOneX = event.getX(index)
+                    lastOneY = event.getY(index)
+                } else if (pointerTwo == MotionEvent.INVALID_POINTER_ID) {
+                    pointerTwo = event.getPointerId(index)
+                    lastTwoX = event.getX(index)
+                    lastTwoY = event.getY(index)
                 }
-                break;
             }
 
-            case MotionEvent.ACTION_MOVE: {
-                if (pointerTwo == INVALID_POINTER_ID) {
-                    // Single pointer controlling 3D rotation.
-                    for (int i = 0, count = event.getPointerCount(); i < count; i++) {
+            MotionEvent.ACTION_MOVE -> {
+                if (pointerTwo == MotionEvent.INVALID_POINTER_ID) {
+                    var i = 0
+                    val count = event.pointerCount
+                    while (i < count) {
                         if (pointerOne == event.getPointerId(i)) {
-                            float eventX = event.getX(i);
-                            float eventY = event.getY(i);
-                            float dx = eventX - lastOneX;
-                            float dy = eventY - lastOneY;
-                            float drx = 90 * (dx / getWidth());
-                            float dry = 90 * (-dy / getHeight()); // Invert Y-axis.
-                            // An 'x' delta affects 'y' rotation and vise versa.
-                            rotationY = Math.min(Math.max(rotationY + drx, ROTATION_MIN), ROTATION_MAX);
-                            rotationX = Math.min(Math.max(rotationX + dry, ROTATION_MIN), ROTATION_MAX);
-                            if (DEBUG) {
-                                log("Single pointer moved (%s, %s) affecting rotation (%s, %s).", dx, dy, drx, dry);
+                            val eventX = event.getX(i)
+                            val eventY = event.getY(i)
+                            val dx = eventX - lastOneX
+                            val dy = eventY - lastOneY
+                            val drx = 90 * (dx / width)
+                            val dry = 90 * (-dy / height)
+                            rotationY = Math.min(
+                                Math.max(rotationY + drx, ROTATION_MIN.toFloat()),
+                                ROTATION_MAX.toFloat()
+                            )
+                            rotationX = Math.min(
+                                Math.max(rotationX + dry, ROTATION_MIN.toFloat()),
+                                ROTATION_MAX.toFloat()
+                            )
+                            lastOneX = eventX
+                            lastOneY = eventY
+                            val currentTime = System.currentTimeMillis()
+                            if (currentTime - lastInvalidateTime > INVALIDATE_FREQUENCY_MS) {
+                                invalidate()
+                                lastInvalidateTime = currentTime
                             }
-
-                            lastOneX = eventX;
-                            lastOneY = eventY;
-
-                            invalidate();
                         }
+                        i++
                     }
                 } else {
-                    // We know there's two pointers and we only care about pointerOne and pointerTwo
-                    int pointerOneIndex = event.findPointerIndex(pointerOne);
-                    int pointerTwoIndex = event.findPointerIndex(pointerTwo);
-
-                    float xOne = event.getX(pointerOneIndex);
-                    float yOne = event.getY(pointerOneIndex);
-                    float xTwo = event.getX(pointerTwoIndex);
-                    float yTwo = event.getY(pointerTwoIndex);
-
-                    float dxOne = xOne - lastOneX;
-                    float dyOne = yOne - lastOneY;
-                    float dxTwo = xTwo - lastTwoX;
-                    float dyTwo = yTwo - lastTwoY;
-
+                    val pointerOneIndex = event.findPointerIndex(pointerOne)
+                    val pointerTwoIndex = event.findPointerIndex(pointerTwo)
+                    val xOne = event.getX(pointerOneIndex)
+                    val yOne = event.getY(pointerOneIndex)
+                    val xTwo = event.getX(pointerTwoIndex)
+                    val yTwo = event.getY(pointerTwoIndex)
+                    val dxOne = xOne - lastOneX
+                    val dyOne = yOne - lastOneY
+                    val dxTwo = xTwo - lastTwoX
+                    val dyTwo = yTwo - lastTwoY
                     if (multiTouchTracking == TRACKING_UNKNOWN) {
-                        float adx = Math.abs(dxOne) + Math.abs(dxTwo);
-                        float ady = Math.abs(dyOne) + Math.abs(dyTwo);
-
+                        val adx = Math.abs(dxOne) + Math.abs(dxTwo)
+                        val ady = Math.abs(dyOne) + Math.abs(dyTwo)
                         if (adx > slop * 2 || ady > slop * 2) {
-                            if (adx > ady) {
-                                // Left/right movement wins. Track horizontal.
-                                multiTouchTracking = TRACKING_HORIZONTALLY;
+                            multiTouchTracking = if (adx > ady) {
+                                TRACKING_HORIZONTALLY
                             } else {
-                                // Up/down movement wins. Track vertical.
-                                multiTouchTracking = TRACKING_VERTICALLY;
+                                TRACKING_VERTICALLY
                             }
                         }
                     }
-
                     if (multiTouchTracking == TRACKING_VERTICALLY) {
-                        if (yOne >= yTwo) {
-                            zoom += dyOne / getHeight() - dyTwo / getHeight();
+                        zoom += if (yOne >= yTwo) {
+                            dyOne / height - dyTwo / height
                         } else {
-                            zoom += dyTwo / getHeight() - dyOne / getHeight();
+                            dyTwo / height - dyOne / height
                         }
-
-                        zoom = Math.min(Math.max(zoom, ZOOM_MIN), ZOOM_MAX);
-                        invalidate();
+                        zoom = Math.min(Math.max(zoom, ZOOM_MIN), ZOOM_MAX)
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime - lastInvalidateTime > INVALIDATE_FREQUENCY_MS) {
+                            invalidate()
+                            lastInvalidateTime = currentTime
+                        }
                     } else if (multiTouchTracking == TRACKING_HORIZONTALLY) {
-                        if (xOne >= xTwo) {
-                            spacing += (dxOne / getWidth() * SPACING_MAX) - (dxTwo / getWidth() * SPACING_MAX);
+                        spacing += if (xOne >= xTwo) {
+                            dxOne / width * SPACING_MAX - dxTwo / width * SPACING_MAX
                         } else {
-                            spacing += (dxTwo / getWidth() * SPACING_MAX) - (dxOne / getWidth() * SPACING_MAX);
+                            dxTwo / width * SPACING_MAX - dxOne / width * SPACING_MAX
                         }
-
-                        spacing = Math.min(Math.max(spacing, SPACING_MIN), SPACING_MAX);
-                        invalidate();
+                        spacing = Math.min(
+                            Math.max(spacing, SPACING_MIN.toFloat()),
+                            SPACING_MAX.toFloat()
+                        )
+                        val currentTime = System.currentTimeMillis()
+                        if (currentTime - lastInvalidateTime > INVALIDATE_FREQUENCY_MS) {
+                            invalidate()
+                            lastInvalidateTime = currentTime
+                        }
                     }
-
                     if (multiTouchTracking != TRACKING_UNKNOWN) {
-                        lastOneX = xOne;
-                        lastOneY = yOne;
-                        lastTwoX = xTwo;
-                        lastTwoY = yTwo;
+                        lastOneX = xOne
+                        lastOneY = yOne
+                        lastTwoX = xTwo
+                        lastTwoY = yTwo
                     }
                 }
-                break;
             }
 
-            case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP: {
-                int index = (action != ACTION_POINTER_UP) ? 0 : event.getActionIndex();
-                int pointerId = event.getPointerId(index);
+            MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
+                val index = if (action != MotionEvent.ACTION_POINTER_UP) 0 else event.actionIndex
+                val pointerId = event.getPointerId(index)
                 if (pointerOne == pointerId) {
-                    // Shift pointer two (real or invalid) up to pointer one.
-                    pointerOne = pointerTwo;
-                    lastOneX = lastTwoX;
-                    lastOneY = lastTwoY;
-                    if (DEBUG) log("Promoting pointer 2 (%s) to pointer 1.", pointerTwo);
-                    // Clear pointer two and tracking.
-                    pointerTwo = INVALID_POINTER_ID;
-                    multiTouchTracking = TRACKING_UNKNOWN;
+                    pointerOne = pointerTwo
+                    lastOneX = lastTwoX
+                    lastOneY = lastTwoY
+                    pointerTwo = MotionEvent.INVALID_POINTER_ID
+                    multiTouchTracking = TRACKING_UNKNOWN
                 } else if (pointerTwo == pointerId) {
-                    if (DEBUG) log("Lost pointer 2 (%s).", pointerTwo);
-                    pointerTwo = INVALID_POINTER_ID;
-                    multiTouchTracking = TRACKING_UNKNOWN;
+                    pointerTwo = MotionEvent.INVALID_POINTER_ID
+                    multiTouchTracking = TRACKING_UNKNOWN
                 }
-                break;
             }
         }
-
-        return true;
+        return true
     }
 
-    @Override public void draw(@SuppressWarnings("NullableProblems") Canvas canvas) {
+    override fun draw(canvas: Canvas) {
         if (!enabled) {
-            super.draw(canvas);
-            return;
+            super.draw(canvas)
+            return
         }
-
-        getLocationInWindow(location);
-        float x = location[0];
-        float y = location[1];
-
-        int saveCount = canvas.save();
-
-        float cx = getWidth() / 2f;
-        float cy = getHeight() / 2f;
-
-        camera.save();
-        camera.rotate(rotationX, rotationY, 0);
-        camera.getMatrix(matrix);
-        camera.restore();
-
-        matrix.preTranslate(-cx, -cy);
-        matrix.postTranslate(cx, cy);
-        canvas.concat(matrix);
-        canvas.scale(zoom, zoom, cx, cy);
-
+        getLocationInWindow(location)
+        val x = location[0].toFloat()
+        val y = location[1].toFloat()
+        val saveCount = canvas.save()
+        val cx = width / 2f
+        val cy = height / 2f
+        camera.save()
+        camera.rotate(rotationX, rotationY, 0f)
+        camera.getMatrix(matrix)
+        camera.restore()
+        matrix.preTranslate(-cx, -cy)
+        matrix.postTranslate(cx, cy)
+        canvas.concat(matrix)
+        canvas.scale(zoom, zoom, cx, cy)
         if (!layeredViewQueue.isEmpty()) {
-            throw new AssertionError("View queue is not empty.");
+            throw AssertionError("View queue is not empty.")
         }
 
-        // We don't want to be rendered so seed the queue with our children.
-        for (int i = 0, count = getChildCount(); i < count; i++) {
-            LayeredView layeredView = layeredViewPool.obtain();
-            layeredView.set(getChildAt(i), 0);
-            layeredViewQueue.add(layeredView);
+        var i = 0
+        val count = childCount
+        while (i < count) {
+            val layeredView = layeredViewPool.obtain()
+            layeredView[getChildAt(i)] = 0
+            layeredViewQueue.add(layeredView)
+            i++
         }
-
         while (!layeredViewQueue.isEmpty()) {
-            LayeredView layeredView = layeredViewQueue.removeFirst();
-            View view = layeredView.view;
-            int layer = layeredView.layer;
+            val layeredView = layeredViewQueue.removeFirst()
+            val view = layeredView.view
+            val layer = layeredView.layer
 
-            // Restore the object to the pool for use later.
-            layeredView.clear();
-            layeredViewPool.restore(layeredView);
+            layeredView.clear()
+            layeredViewPool.restore(layeredView)
 
-            // Hide any visible children.
-            if (view instanceof ViewGroup) {
-                ViewGroup viewGroup = (ViewGroup) view;
-                visibilities.clear();
-                for (int i = 0, count = viewGroup.getChildCount(); i < count; i++) {
-                    View child = viewGroup.getChildAt(i);
-                    //noinspection ConstantConditions
-                    if (child.getVisibility() == VISIBLE) {
-                        visibilities.set(i);
-                        child.setVisibility(INVISIBLE);
+            if (view is ViewGroup) {
+                val viewGroup = view
+                visibilities.clear()
+                var i = 0
+                val count = viewGroup.childCount
+                while (i < count) {
+                    val child = viewGroup.getChildAt(i)
+                    if (child.visibility == VISIBLE) {
+                        visibilities.set(i)
+                        child.visibility = INVISIBLE
                     }
+                    i++
                 }
             }
+            val viewSaveCount = canvas.save()
 
-            int viewSaveCount = canvas.save();
-
-            // Scale the layer index translation by the rotation amount.
-            float translateShowX = rotationY / ROTATION_MAX;
-            float translateShowY = rotationX / ROTATION_MAX;
-            float tx = layer * spacing * density * translateShowX;
-            float ty = layer * spacing * density * translateShowY;
-            canvas.translate(tx, -ty);
-
-            view.getLocationInWindow(location);
-            canvas.translate(location[0] - x, location[1] - y);
-
-            viewBoundsRect.set(0, 0, view.getWidth(), view.getHeight());
-            canvas.drawRect(viewBoundsRect, viewBorderPaint);
-
-            if (drawViews) {
-                view.draw(canvas);
+            val translateShowX = rotationY / ROTATION_MAX
+            val translateShowY = rotationX / ROTATION_MAX
+            val tx = layer * spacing * density * translateShowX
+            val ty = layer * spacing * density * translateShowY
+            canvas.translate(tx, -ty)
+            view!!.getLocationInWindow(location)
+            canvas.translate(location[0] - x, location[1] - y)
+            viewBoundsRect[0, 0, view.width] = view.height
+            canvas.drawRect(viewBoundsRect, viewBorderPaint)
+            if (isDrawingViews) {
+                view.draw(canvas)
             }
-
-            if (drawIds) {
-                int id = view.getId();
+            if (isDrawingIds) {
+                val id = view.id
                 if (id != NO_ID) {
-                    canvas.drawText(nameForId(id), textOffset, textSize, viewBorderPaint);
+                    canvas.drawText(nameForId(id)!!, textOffset, textSize, viewBorderPaint)
                 }
             }
+            canvas.restoreToCount(viewSaveCount)
 
-            canvas.restoreToCount(viewSaveCount);
-
-            // Restore any hidden children and queue them for later drawing.
-            if (view instanceof ViewGroup) {
-                ViewGroup viewGroup = (ViewGroup) view;
-                for (int i = 0, count = viewGroup.getChildCount(); i < count; i++) {
-                    if (visibilities.get(i)) {
-                        View child = viewGroup.getChildAt(i);
-                        //noinspection ConstantConditions
-                        child.setVisibility(VISIBLE);
-                        LayeredView childLayeredView = layeredViewPool.obtain();
-                        childLayeredView.set(child, layer + 1);
-                        layeredViewQueue.add(childLayeredView);
+            if (view is ViewGroup) {
+                val viewGroup = view
+                var i = 0
+                val count = viewGroup.childCount
+                while (i < count) {
+                    if (visibilities[i]) {
+                        val child = viewGroup.getChildAt(i)
+                        child.visibility = VISIBLE
+                        val childLayeredView = layeredViewPool.obtain()
+                        childLayeredView[child] = layer + 1
+                        layeredViewQueue.add(childLayeredView)
                     }
+                    i++
                 }
             }
         }
-
-        canvas.restoreToCount(saveCount);
+        canvas.restoreToCount(saveCount)
     }
 
-    private String nameForId(int id) {
-        String name = idNames.get(id);
+    private fun nameForId(id: Int): String? {
+        var name = idNames[id]
         if (name == null) {
-            try {
-                name = res.getResourceEntryName(id);
-            } catch (NotFoundException e) {
-                name = String.format("0x%8x", id);
+            name = try {
+                res.getResourceEntryName(id)
+            } catch (e: Resources.NotFoundException) {
+                String.format("0x%8x", id)
             }
-            idNames.put(id, name);
+            idNames.put(id, name)
         }
-        return name;
+        return name
     }
 
-    private static abstract class Pool<T> {
-        private final Deque<T> pool;
+    private abstract class Pool<T>(initialSize: Int) {
+        private val pool: Deque<T>
 
-        Pool(int initialSize) {
-            pool = new ArrayDeque<>(initialSize);
-            for (int i = 0; i < initialSize; i++) {
-                pool.addLast(newObject());
+        init {
+            pool = ArrayDeque(initialSize)
+            for (i in 0 until initialSize) {
+                pool.addLast(newObject())
             }
         }
 
-        T obtain() {
-            return pool.isEmpty() ? newObject() : pool.removeLast();
+        fun obtain(): T {
+            return if (pool.isEmpty()) newObject() else pool.removeLast()
         }
 
-        void restore(T instance) {
-            pool.addLast(instance);
+        fun restore(instance: T) {
+            pool.addLast(instance)
         }
 
-        protected abstract T newObject();
+        protected abstract fun newObject(): T
+    }
+
+    companion object {
+        private const val TRACKING_UNKNOWN = 0
+        private const val TRACKING_VERTICALLY = 1
+        private const val TRACKING_HORIZONTALLY = -1
+        private const val ROTATION_MAX = 60
+        private const val ROTATION_MIN = -ROTATION_MAX
+        private const val ROTATION_DEFAULT_X = -10
+        private const val ROTATION_DEFAULT_Y = 15
+        private const val ZOOM_DEFAULT = 0.6f
+        private const val ZOOM_MIN = 0.33f
+        private const val ZOOM_MAX = 2f
+        private const val SPACING_DEFAULT = 25
+        private const val SPACING_MIN = 10
+        private const val SPACING_MAX = 100
+        private const val CHROME_COLOR = -0x777778
+        private const val CHROME_SHADOW_COLOR = -0x1000000
+        private const val TEXT_OFFSET_DP = 2
+        private const val TEXT_SIZE_DP = 10
+        private const val CHILD_COUNT_ESTIMATION = 25
+        private const val DEBUG = false
+        const val INVALIDATE_FREQUENCY_MS = 100L
+
+        private fun log(message: String, vararg args: Any) {
+            Log.d("Scalpel", String.format(message, *args))
+        }
     }
 }
-

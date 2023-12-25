@@ -17,16 +17,12 @@ import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import com.jakewharton.scalpel.ScalpelFrameLayout;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import static me.ele.uetool.TransparentActivity.Type.TYPE_UNKNOWN;
 import static me.ele.uetool.UETMenuKotlinKt.getSubMenu;
-
-import androidx.annotation.NonNull;
 
 public class UETMenu extends LinearLayout {
 
