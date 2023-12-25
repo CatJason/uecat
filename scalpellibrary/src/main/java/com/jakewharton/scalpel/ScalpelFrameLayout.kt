@@ -1,5 +1,6 @@
 package com.jakewharton.scalpel
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Camera
@@ -150,6 +151,7 @@ class ScalpelFrameLayout @JvmOverloads constructor(
         return enabled || super.onInterceptTouchEvent(ev)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (!enabled) {
             return super.onTouchEvent(event)
@@ -181,14 +183,10 @@ class ScalpelFrameLayout @JvmOverloads constructor(
                             val dy = eventY - lastOneY
                             val drx = 90 * (dx / width)
                             val dry = 90 * (-dy / height)
-                            rotationY = Math.min(
-                                Math.max(rotationY + drx, ROTATION_MIN.toFloat()),
-                                ROTATION_MAX.toFloat()
-                            )
-                            rotationX = Math.min(
-                                Math.max(rotationX + dry, ROTATION_MIN.toFloat()),
-                                ROTATION_MAX.toFloat()
-                            )
+                            rotationY = (rotationY + drx).coerceAtLeast(ROTATION_MIN.toFloat())
+                                .coerceAtMost(ROTATION_MAX.toFloat())
+                            rotationX = (rotationX + dry).coerceAtLeast(ROTATION_MIN.toFloat())
+                                .coerceAtMost(ROTATION_MAX.toFloat())
                             lastOneX = eventX
                             lastOneY = eventY
                             val currentTime = System.currentTimeMillis()
