@@ -10,7 +10,6 @@ import android.graphics.Rect
 import android.graphics.Typeface
 import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
 import android.util.SparseArray
 import android.view.MotionEvent
 import android.view.View
@@ -424,11 +423,6 @@ class ScalpelFrameLayout @JvmOverloads constructor(
         private const val TEXT_OFFSET_DP = 2
         private const val TEXT_SIZE_DP = 10
         private const val CHILD_COUNT_ESTIMATION = 25
-        private const val DEBUG = false
         const val INVALIDATE_FREQUENCY_MS = 100L
-
-        private fun log(message: String, vararg args: Any) {
-            Log.d("Scalpel", String.format(message, *args))
-        }
     }
 }
