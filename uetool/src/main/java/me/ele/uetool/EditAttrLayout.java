@@ -187,13 +187,10 @@ public class EditAttrLayout extends CollectViewsLayout {
                             dialog.show(targetElement);
                         }
                     });
-                    dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            if (targetElement != null) {
-                                targetElement.reset();
-                                invalidate();
-                            }
+                    dialog.setOnDismissListener(dialog -> {
+                        if (targetElement != null) {
+                            targetElement.reset();
+                            invalidate();
                         }
                     });
                 }

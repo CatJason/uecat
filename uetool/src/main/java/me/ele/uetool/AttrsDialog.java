@@ -1,5 +1,6 @@
 package me.ele.uetool;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,8 +15,11 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.StrikethroughSpan;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -25,11 +29,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.text.style.ForegroundColorSpan;
-
-
 import java.util.ArrayList;
 import java.util.List;
-
 import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder;
 import me.ele.uetool.attrdialog.AttrsDialogMultiTypePool;
 import me.ele.uetool.base.Element;
@@ -45,7 +46,6 @@ import me.ele.uetool.base.item.TextItem;
 import me.ele.uetool.base.item.TitleItem;
 import me.ele.uetool.cat.StringUtilKt;
 import me.ele.uetool.cat.ViewXRayKt;
-
 import static me.ele.uetool.base.DimenUtil.dip2px;
 import static me.ele.uetool.base.DimenUtil.getScreenHeight;
 import static me.ele.uetool.base.DimenUtil.getScreenWidth;
@@ -57,13 +57,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class AttrsDialog extends Dialog {
-
     private RecyclerView vList;
     private Adapter adapter = new Adapter();
     private RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
 
     public AttrsDialog(Context context) {
         super(context, R.style.uet_Theme_Holo_Dialog_background_Translucent);
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -87,6 +92,73 @@ public class AttrsDialog extends Dialog {
         dialogWindow.setAttributes(lp);
         adapter.notifyDataSetChanged(element);
         layoutManager.scrollToPosition(0);
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            Item item = adapter.getItem(i);
+            if (item instanceof SwitchItem && ((SwitchItem) item).getType() == SwitchItem.Type.TYPE_SHOW_VALID_VIEWS) {
+                ((SwitchItem) item).setChecked(true);
+                if (adapter.callback != null) {
+                    adapter.callback.showValidViews(i, true);
+                }
+                break;
+            }
+        }
+
+        View myCat = findViewById(R.id.cat);
+        myCat.setOnTouchListener(new View.OnTouchListener() {
+            private int initialX;
+            private int initialY;
+            private float initialTouchX;
+            private float initialTouchY;
+            private boolean isDragged = false;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        // 记录触摸开始时的位置
+                        initialX = dialogWindow.getAttributes().x;
+                        initialY = dialogWindow.getAttributes().y;
+                        initialTouchX = event.getRawX();
+                        initialTouchY = event.getRawY();
+                        isDragged = false;
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        if (!isDragged) {
+                            // 这里处理点击事件
+                            v.performClick();
+                        }
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        // 计算移动的距离
+                        int deltaX = (int) (event.getRawX() - initialTouchX);
+                        int deltaY = (int) (event.getRawY() - initialTouchY);
+                        if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {  // 10像素的阈值来判断是否拖拽
+                            isDragged = true;
+                            // 更新对话框的位置
+                            WindowManager.LayoutParams params = dialogWindow.getAttributes();
+                            params.x = initialX + deltaX;
+                            params.y = initialY + deltaY;
+                            dialogWindow.setAttributes(params);
+                        }
+
+                        return true;
+                }
+                return false;
+            }
+        });
+
+        View sign = findViewById(R.id.sign);
+        myCat.setOnClickListener(v -> {
+            if(vList.getVisibility() == View.GONE) {
+                vList.setVisibility(View.VISIBLE);
+                sign.setAlpha(1f);
+                v.setAlpha(1f);
+            } else {
+                vList.setVisibility(View.GONE);
+                sign.setAlpha(0.2f);
+                v.setAlpha(0.2f);
+            }
+        });
     }
 
     public void notifyValidViewItemInserted(int positionStart, List<Element> validElements, Element targetElement) {
@@ -441,9 +513,11 @@ public class AttrsDialog extends Dialog {
                                 }
                                 return;
                             } else if (item.getType() == SwitchItem.Type.TYPE_SHOW_VALID_VIEWS) {
-                                item.setChecked(isChecked);
-                                if (callback != null) {
-                                    callback.showValidViews(getAdapterPosition(), isChecked);
+                                if(item.isChecked() != isChecked) {
+                                    item.setChecked(isChecked);
+                                    if (callback != null) {
+                                        callback.showValidViews(getAdapterPosition(), isChecked);
+                                    }
                                 }
                                 return;
                             }
@@ -554,65 +628,56 @@ public class AttrsDialog extends Dialog {
             public void bindView(BriefDescItem briefDescItem) {
                 super.bindView(briefDescItem);
                 View view = briefDescItem.getElement().getView();
-                StringBuilder sb = new StringBuilder();
-                int numberOfSpaces = ViewXRayKt.getViewLayer(view) * 2;
-
-
-                // Append the spaces to the StringBuilder.
-                for (int i = 0; i < numberOfSpaces; i++) {
-                    sb.append("  ");
-                }
-
-                if (numberOfSpaces > 0) {
-                    sb.append("└ ");
-                }
-
-                if (isSystemClass(view)) {
-                    sb.append("[系统] ");
-                } else {
-                    sb.append("[自定义] ");
-                }
-                sb.append(StringUtilKt.extractAfterLastDot(view.getClass().getName()));
                 String resName = Util.getResourceName(view.getId());
 
-                // 创建一个 SpannableString 对象
-                SpannableString spannableString;
+                // 创建带样式的文本
+                SpannableString spannableText = buildDisplayTextWithStyles(view, resName);
 
+                // 设置带样式的文本到 TextView
+                vDesc.setText(spannableText);
+                vDesc.setSelected(briefDescItem.isSelected());
+                vDesc.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
+            }
+
+            private SpannableString buildDisplayTextWithStyles(View view, String resName) {
+                StringBuilder sb = new StringBuilder();
+
+                // 添加空格缩进
+                int numberOfSpaces = ViewXRayKt.getViewLayer(view) * 2;
+                sb.append("  ".repeat(Math.max(0, numberOfSpaces)));
+
+                // 添加类别前缀和类名
+                sb.append(numberOfSpaces > 0 ? "└ " : "")
+                        .append(isSystemClass(view) ? "[系统] " : "[自定义] ")
+                        .append(StringUtilKt.extractAfterLastDot(view.getClass().getName()));
+
+                // 添加资源名称（如果存在）
                 if (!TextUtils.isEmpty(resName)) {
-                    String textToAppend = " (@+id/" + resName + ")";
-                    sb.append(textToAppend);
-                    spannableString = new SpannableString(sb.toString());
-
-                    // 设置颜色span
-                    ForegroundColorSpan foregroundSpan = new ForegroundColorSpan(Color.GREEN);
-                    // 注意这里使用 textToAppend.length() 来定位span，因为我们需要对添加的字符串应用颜色更改
-                    spannableString.setSpan(foregroundSpan, sb.length() - textToAppend.length(), sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    sb.append(" (@+id/").append(resName).append(")");
                 } else {
-                    sb.append(" ");
-                    String noIdText = "(未设置 id)";
-                    sb.append(noIdText);
-
-                    spannableString = new SpannableString(sb.toString());
-
-                    // 计算需要添加样式的字符串的起始和结束位置
-                    int start = sb.length() - noIdText.length();
-                    int end = sb.length();
-
-                    // 设置删除线和前景色
-                    StrikethroughSpan strikethroughSpan = new StrikethroughSpan();
-                    ForegroundColorSpan foregroundColorSpan = new ForegroundColorSpan(Color.YELLOW);  // 设置为黄色
-
-                    // 应用span到字符串上，只修改特定部分
-                    spannableString.setSpan(strikethroughSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    spannableString.setSpan(foregroundColorSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                    // 设置带样式的文本到 TextView
-                    vDesc.setText(spannableString);
+                    sb.append(" (未设置 id)");
                 }
 
-                // 在TextView中设置带有样式的文本
-                vDesc.setText(spannableString);
-                vDesc.setSelected(briefDescItem.isSelected());
+                return applySpannableStyles(sb.toString(), resName);
+            }
+
+            private SpannableString applySpannableStyles(String text, String resName) {
+                SpannableString spannableString = new SpannableString(text);
+
+                // 如果资源名称存在，则应用绿色前景色
+                if (!TextUtils.isEmpty(resName)) {
+                    int start = text.indexOf("(@+id/");
+                    int end = start + resName.length() + 6; // 加上 "(@+id/" 和 ")" 的长度
+                    spannableString.setSpan(new ForegroundColorSpan(Color.GREEN), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                } else {
+                    // 否则，对 "(未设置 id)" 应用黄色删除线
+                    int start = text.indexOf("(未设置 id)");
+                    int end = start + "(未设置 id)".length();
+                    spannableString.setSpan(new StrikethroughSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    spannableString.setSpan(new ForegroundColorSpan(Color.YELLOW), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+
+                return spannableString;
             }
         }
     }
