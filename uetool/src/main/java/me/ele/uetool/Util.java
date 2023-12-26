@@ -271,7 +271,7 @@ public class Util {
     @Nullable
     public static Fragment getCurrentFragment(View targetView) {
 
-        Activity activity = UETool.getInstance().getTargetActivity();
+        Activity activity = UETool.getInstance().targetActivity;
         if (activity instanceof FragmentActivity) {
             List<Fragment> fragments = collectVisibleFragment(((FragmentActivity) activity).getSupportFragmentManager());
             for (int i = fragments.size() - 1; i >= 0; i--) {
