@@ -107,15 +107,16 @@ public class UETool {
     }
 
     private boolean showMenu(int y) {
+        Context context = Application.getApplicationContext();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(Application.getApplicationContext())) {
-                requestPermission(Application.getApplicationContext());
+            if (!Settings.canDrawOverlays(context)) {
+                requestPermission(context);
                 Toast.makeText(Application.getApplicationContext(), "After grant this permission, re-enable UETool", Toast.LENGTH_LONG).show();
                 return false;
             }
         }
         if (uetMenu == null) {
-            uetMenu = new UETMenu(Application.getApplicationContext(), y);
+            uetMenu = new UETMenu(context, y);
         }
         if (!uetMenu.isShown()) {
             uetMenu.show();

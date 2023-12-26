@@ -28,7 +28,7 @@ public class GriddingLayout extends View {
         }
     };
 
-    private Activity bindActivity = UETool.getInstance().targetActivity;
+    private Activity bindActivity = UETool.getInstance().getTargetActivity();
 
     public GriddingLayout(Context context) {
         super(context);

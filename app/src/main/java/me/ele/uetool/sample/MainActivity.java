@@ -1,5 +1,6 @@
 package me.ele.uetool.sample;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
@@ -29,16 +30,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final SwitchCompat control = findViewById(R.id.control);
-        control.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    if (!UETool.showUETMenu()) {
-                        control.setChecked(false);
-                    }
-                } else {
-                    UETool.dismissUETMenu();
+        control.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                if (!UETool.showUETMenu()) {
+                    control.setChecked(false);
                 }
+            } else {
+                UETool.dismissUETMenu();
             }
         });
         control.setChecked(true);
@@ -49,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         updateFontView();
     }
 
+    @SuppressLint("NonConstantResourceId")
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn1:
