@@ -1,7 +1,11 @@
 package me.ele.uetool;
 
+import android.annotation.SuppressLint;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -26,6 +30,7 @@ public class TransparentActivity extends AppCompatActivity {
     private int type;
 
     @Override
+    @SuppressLint("ClickableViewAccessibility")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
@@ -43,18 +48,47 @@ public class TransparentActivity extends AppCompatActivity {
             UETool.getInstance().getTargetActivity().finish();
             finish();
         });
+        board.setGravity(Gravity.CENTER);
+
+        // 初始触摸位置
+        final float[] initialTouch = new float[2];
+
+        board.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    // 记录触摸位置
+                    initialTouch[0] = event.getRawX();
+                    initialTouch[1] = event.getRawY();
+                    break;
+
+                case MotionEvent.ACTION_MOVE:
+                    // 计算偏移量
+                    float dx = event.getRawX() - initialTouch[0];
+                    float dy = event.getRawY() - initialTouch[1];
+
+                    // 设置新的位置
+                    v.setX(v.getX() + dx);
+                    v.setY(v.getY() + dy);
+
+                    // 更新触摸位置
+                    initialTouch[0] = event.getRawX();
+                    initialTouch[1] = event.getRawY();
+                    break;
+
+                case MotionEvent.ACTION_UP:
+                    // 可以在这里处理点击事件或者其他事情
+                    break;
+            }
+            return true;
+        });
+
 
         type = getIntent().getIntExtra(EXTRA_TYPE, TYPE_UNKNOWN);
 
         switch (type) {
             case TYPE_EDIT_ATTR:
                 EditAttrLayout editAttrLayout = new EditAttrLayout(this);
-                editAttrLayout.setOnDragListener(new EditAttrLayout.OnDragListener() {
-                    @Override
-                    public void showOffset(String offsetContent) {
-                        board.updateInfo(offsetContent);
-                    }
-                });
+                editAttrLayout.setOnDragListener(board::updateInfo);
                 vContainer.addView(editAttrLayout);
                 break;
             case TYPE_RELATIVE_POSITION:
@@ -70,8 +104,20 @@ public class TransparentActivity extends AppCompatActivity {
                 break;
         }
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+        int width = 100;
+        int height = 100;
+        int marginInDp = 20;
+
+        // 将宽度和高度转换为像素
+        Resources resources = getResources();
+        float scale = resources.getDisplayMetrics().density;
+        int widthInPx = (int) (width * scale + 0.5f);
+        int heightInPx = (int) (height * scale + 0.5f);
+        int marginInPx = (int) (marginInDp * scale + 0.5f);
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(widthInPx, heightInPx);
         params.gravity = BOTTOM;
+        params.setMargins(marginInPx, marginInPx, marginInPx, marginInPx);
         vContainer.addView(board, params);
     }
 

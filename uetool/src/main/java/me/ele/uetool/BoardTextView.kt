@@ -13,8 +13,7 @@ class BoardTextView @JvmOverloads constructor(
 ) : AppCompatTextView(
     context!!, attrs, defStyleAttr
 ) {
-    private val defaultInfo =
-        resources.getString(R.string.uet_name) + " / " + UETool.getInstance().targetActivity.javaClass.name
+    private val defaultInfo = "点击\n退出"
     private val padding = DimenUtil.dip2px(3f)
 
     init {
@@ -25,7 +24,7 @@ class BoardTextView @JvmOverloads constructor(
         setBackgroundColor(-0x6fdc6a01)
         setPadding(padding, padding, padding, padding)
         setTextColor(-0x1)
-        textSize = 9f
+        textSize = 20f
         text = defaultInfo
         setCompoundDrawablesRelativeWithIntrinsicBounds(
             null, null, ContextCompat.getDrawable(
