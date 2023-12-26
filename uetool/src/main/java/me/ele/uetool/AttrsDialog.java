@@ -237,14 +237,14 @@ public class AttrsDialog extends Dialog {
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            AttrsDialogMultiTypePool pool = UETool.getInstance().attrsDialogMultiTypePool;
+            AttrsDialogMultiTypePool pool = UETool.getInstance().getAttrsDialogMultiTypePool();
             ((AttrsDialogItemViewBinder) pool.getItemViewBinder(holder.getItemViewType())).onBindViewHolder(holder, getItem(position));
         }
 
         @Override
         public int getItemViewType(int position) {
             Item item = getItem(position);
-            AttrsDialogMultiTypePool pool = UETool.getInstance().attrsDialogMultiTypePool;
+            AttrsDialogMultiTypePool pool = UETool.getInstance().getAttrsDialogMultiTypePool();
             return pool.getItemType(item);
         }
 
