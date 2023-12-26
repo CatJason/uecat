@@ -18,6 +18,7 @@ import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
 
+import me.ele.uetool.UETool;
 import me.ele.uetool.sample.ui.recyclerviewsample.RecyclerViewActivity;
 
 public class MainActivity extends AppCompatActivity {
