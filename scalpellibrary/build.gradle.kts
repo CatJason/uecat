@@ -58,4 +58,5 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.appcompat:appcompat:1.5.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.21")
 }
