@@ -3,7 +3,6 @@ package me.ele.uetool
 import android.content.Context
 import android.content.res.Resources
 import android.view.ViewGroup
-import com.jakewharton.scalpel.ScalpelFrameLayout
 
 fun getSubMenu(resources: Resources, context: Context): UETSubMenu.SubMenu {
     return UETSubMenu.SubMenu(

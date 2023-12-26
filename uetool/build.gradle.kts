@@ -56,7 +56,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":scalpellibrary"))
     implementation("com.facebook.fresco:fresco:3.1.0")
     implementation("com.github.tiann:FreeReflection:3.1.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
