@@ -56,7 +56,7 @@ android {
 }
 
 dependencies {
-    implementation("com.facebook.fresco:fresco:3.1.0")
+    implementation("com.facebook.fresco:fresco:2.1.0")
     implementation("com.github.tiann:FreeReflection:3.1.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.appcompat:appcompat:1.5.0")
