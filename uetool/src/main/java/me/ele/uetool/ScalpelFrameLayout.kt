@@ -191,7 +191,7 @@ class ScalpelFrameLayout @JvmOverloads constructor(
                             lastOneY = eventY
                             val currentTime = System.currentTimeMillis()
                             if (currentTime - lastInvalidateTime > INVALIDATE_FREQUENCY_MS) {
-                                invalidate()
+                                clearView()
                                 lastInvalidateTime = currentTime
                             }
                         }
@@ -228,7 +228,7 @@ class ScalpelFrameLayout @JvmOverloads constructor(
                         zoom = Math.min(Math.max(zoom, ZOOM_MIN), ZOOM_MAX)
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastInvalidateTime > INVALIDATE_FREQUENCY_MS) {
-                            invalidate()
+                            clearView()
                             lastInvalidateTime = currentTime
                         }
                     } else if (multiTouchTracking == TRACKING_HORIZONTALLY) {
@@ -243,7 +243,7 @@ class ScalpelFrameLayout @JvmOverloads constructor(
                         )
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastInvalidateTime > INVALIDATE_FREQUENCY_MS) {
-                            invalidate()
+                            clearView()
                             lastInvalidateTime = currentTime
                         }
                     }
@@ -273,6 +273,19 @@ class ScalpelFrameLayout @JvmOverloads constructor(
         }
         return true
     }
+
+    fun clearView() {
+        // 清除所有层级视图
+        layeredViewQueue.clear()
+        while (!layeredViewPool.pool.isEmpty()) {
+            val layeredView = layeredViewPool.pool.removeFirst()
+            layeredView.clear()
+        }
+
+        // 强制重新绘制
+        invalidate()
+    }
+
 
     override fun draw(canvas: Canvas) {
         if (!enabled) {
@@ -382,7 +395,7 @@ class ScalpelFrameLayout @JvmOverloads constructor(
     }
 
     private abstract class Pool<T>(initialSize: Int) {
-        private val pool: Deque<T>
+        val pool: Deque<T>
 
         init {
             pool = ArrayDeque(initialSize)
