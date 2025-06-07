@@ -13,7 +13,6 @@ import android.widget.Toast
 import me.ele.uetool.base.Element
 import me.ele.uetool.base.ReflectionP
 import java.util.*
-import me.ele.uetool.base.ReflectionP.Func
 import me.ele.uetool.base.DimenUtil.dip2px
 import me.ele.uetool.base.DimenUtil.getScreenHeight
 import me.ele.uetool.base.DimenUtil.getScreenWidth
@@ -83,27 +82,33 @@ open class CollectViewsLayout : View {
                         }
                     }
                 } else {
-                    ReflectionP.breakAndroidP(Func<Void> {
+                    ReflectionP.breakAndroidP {
                         try {
-                            val mRootsField = Class.forName("android.view.WindowManagerGlobal").getDeclaredField("mRoots")
+                            val mRootsField = Class.forName("android.view.WindowManagerGlobal")
+                                .getDeclaredField("mRoots")
                             mRootsField.isAccessible = true
-                            val viewRootImpls = mRootsField.get(mGlobalField.get(windowManager)) as List<*>
+                            val viewRootImpls =
+                                mRootsField.get(mGlobalField.get(windowManager)) as List<*>
                             for (i in viewRootImpls.indices.reversed()) {
                                 val clazz = Class.forName("android.view.ViewRootImpl")
                                 val obj = viewRootImpls[i]
                                 var layoutParams: WindowManager.LayoutParams? = null
                                 try {
-                                    val mWindowAttributesField = clazz.getDeclaredField("mWindowAttributes")
+                                    val mWindowAttributesField =
+                                        clazz.getDeclaredField("mWindowAttributes")
                                     mWindowAttributesField.isAccessible = true
-                                    layoutParams = mWindowAttributesField.get(obj) as WindowManager.LayoutParams
+                                    layoutParams =
+                                        mWindowAttributesField.get(obj) as WindowManager.LayoutParams
                                 } catch (e: Exception) {
                                     e.printStackTrace()
                                 }
                                 val mViewField = clazz.getDeclaredField("mView")
                                 mViewField.isAccessible = true
                                 val decorView = mViewField.get(obj) as View
-                                if ((layoutParams != null && layoutParams.title.toString().contains(targetActivity.javaClass.name))
-                                    || getTargetDecorView(targetActivity, decorView) != null) {
+                                if ((layoutParams != null && layoutParams.title.toString()
+                                        .contains(targetActivity.javaClass.name))
+                                    || getTargetDecorView(targetActivity, decorView) != null
+                                ) {
                                     createElements(decorView)
                                     break
                                 }
@@ -112,7 +117,7 @@ open class CollectViewsLayout : View {
                             e.printStackTrace()
                         }
                         null
-                    })
+                    }
                 }
             } else {
                 // http://androidxref.com/4.1.1/xref/frameworks/base/core/java/android/view/WindowManagerImpl.java

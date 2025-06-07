@@ -8,6 +8,12 @@ import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder
 import me.ele.uetool.base.item.BitmapItem
 
 class BitmapItemBinder : AttrsDialogItemViewBinder<BitmapItem, AttrsDialog.Adapter.BitmapInfoViewHolder>() {
+    override fun onBindViewHolder(
+        holder: AttrsDialog.Adapter.BitmapInfoViewHolder,
+        item: BitmapItem
+    ) {
+        holder.bindView(item)
+    }
 
     override fun onCreateViewHolder(
         inflater: LayoutInflater,
@@ -15,12 +21,5 @@ class BitmapItemBinder : AttrsDialogItemViewBinder<BitmapItem, AttrsDialog.Adapt
         adapter: RecyclerView.Adapter<*>
     ): AttrsDialog.Adapter.BitmapInfoViewHolder {
         return AttrsDialog.Adapter.BitmapInfoViewHolder.newInstance(parent)
-    }
-
-    override fun onBindViewHolder(
-        holder: AttrsDialog.Adapter.BitmapInfoViewHolder,
-        item: BitmapItem
-    ) {
-        holder.bindView(item)
     }
 }

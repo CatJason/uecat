@@ -13,16 +13,18 @@ import me.ele.uetool.base.item.AddMinusEditItem
  */
 class AddMinusEditTextItemBinder : AttrsDialogItemViewBinder<AddMinusEditItem, AttrsDialog.Adapter.AddMinusEditViewHolder>() {
 
-    override fun onCreateViewHolder(
-        inflater: LayoutInflater,
-        parent: ViewGroup,
-        adapter: RecyclerView.Adapter<*>
-    ) = AttrsDialog.Adapter.AddMinusEditViewHolder.newInstance(parent)
-
     override fun onBindViewHolder(
         holder: AttrsDialog.Adapter.AddMinusEditViewHolder,
         item: AddMinusEditItem
     ) {
         holder.bindView(item)
+    }
+
+    override fun onCreateViewHolder(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        adapter: RecyclerView.Adapter<*>
+    ): AttrsDialog.Adapter.AddMinusEditViewHolder {
+        return AttrsDialog.Adapter.AddMinusEditViewHolder.newInstance(parent)
     }
 }

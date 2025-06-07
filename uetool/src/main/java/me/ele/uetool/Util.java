@@ -19,6 +19,8 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import kotlin.jvm.functions.Function0;
 import me.ele.uetool.base.Application;
 
 import java.lang.reflect.Field;
@@ -27,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import me.ele.uetool.base.ReflectionP;
-import me.ele.uetool.base.ReflectionP.Func;
 
 import static android.view.View.NO_ID;
 
@@ -61,15 +62,18 @@ public class Util {
     }
 
     public static String getViewClickListener(final View view) {
-        return ReflectionP.breakAndroidP(new Func<String>() {
-            @Override public String call() {
+        return ReflectionP.breakAndroidP(new Function0<String>() {
+            @Override
+            public String invoke() {
                 try {
                     final Field mListenerInfoField = View.class.getDeclaredField("mListenerInfo");
                     mListenerInfoField.setAccessible(true);
-                    final Field mClickListenerField = Class.forName("android.view.View$ListenerInfo").getDeclaredField("mOnClickListener");
+                    final Field mClickListenerField = Class.forName("android.view.View$ListenerInfo")
+                            .getDeclaredField("mOnClickListener");
                     mClickListenerField.setAccessible(true);
-                    OnClickListener listener = (OnClickListener) mClickListenerField.get(mListenerInfoField.get(view));
-                    return listener.getClass().getName();
+                    View.OnClickListener listener = (View.OnClickListener)
+                            mClickListenerField.get(mListenerInfoField.get(view));
+                    return listener != null ? listener.getClass().getName() : null;
                 } catch (Exception e) {
                     return null;
                 }

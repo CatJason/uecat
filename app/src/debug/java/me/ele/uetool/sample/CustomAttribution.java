@@ -1,5 +1,7 @@
 package me.ele.uetool.sample;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,7 @@ import me.ele.uetool.base.item.TextItem;
 
 public class CustomAttribution implements IAttrs {
 
+    @NotNull
     @Override
     public List<Item> getAttrs(Element element) {
         List<Item> items = new ArrayList<>();

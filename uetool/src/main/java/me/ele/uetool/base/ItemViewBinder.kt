@@ -12,7 +12,7 @@ interface ItemViewBinder<T, VH : RecyclerView.ViewHolder?> {
     fun onCreateViewHolder(
         inflater: LayoutInflater,
         parent: ViewGroup,
-        adapter: RecyclerView.Adapter<*>?
+        adapter: RecyclerView.Adapter<*>
     ): VH
 
     fun onBindViewHolder(holder: VH, item: T)
