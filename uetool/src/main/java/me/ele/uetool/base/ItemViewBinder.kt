@@ -1,22 +1,21 @@
-package me.ele.uetool.base;
+package me.ele.uetool.base
 
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 
 /**
- * @author: weishenhong <a href="mailto:weishenhong@bytedance.com">contact me.</a>
+ * @author: weishenhong [contact me.](mailto:weishenhong@bytedance.com)
  * @date: 2019-07-08 22:51
  */
-public interface ItemViewBinder<T, VH extends RecyclerView.ViewHolder> {
+interface ItemViewBinder<T, VH : RecyclerView.ViewHolder?> {
+    fun onCreateViewHolder(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        adapter: RecyclerView.Adapter<*>?
+    ): VH
 
-    @NonNull
-    VH onCreateViewHolder(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, RecyclerView.Adapter adapter);
-
-    void onBindViewHolder(@NonNull VH holder, @NonNull T item);
-
+    fun onBindViewHolder(holder: VH, item: T)
 }
 
 

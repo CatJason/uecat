@@ -1,14 +1,3 @@
-package me.ele.uetool.base.item;
+package me.ele.uetool.base.item
 
-public class TitleItem extends Item {
-
-    private String name;
-
-    public TitleItem(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-}
+open class TitleItem(@JvmField val name: String) : Item()

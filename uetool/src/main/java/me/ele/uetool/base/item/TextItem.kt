@@ -1,54 +1,25 @@
-package me.ele.uetool.base.item;
+package me.ele.uetool.base.item
 
-import android.text.TextUtils;
-import android.view.View;
+import android.text.TextUtils
+import android.view.View
 
-import androidx.annotation.Nullable;
+class TextItem @JvmOverloads constructor(
+    name: String, @JvmField val detail: String?, //  是否可复制文案
+    val isEnableCopy: Boolean = false, @JvmField val onClickListener: View.OnClickListener? = null
+) :
+    TitleItem(name) {
+    constructor(name: String, detail: String?, onClickListener: View.OnClickListener?) : this(
+        name,
+        detail,
+        false,
+        onClickListener
+    )
 
-public class TextItem extends TitleItem {
-
-    private String detail;
-    private boolean enableCopy;
-    private View.OnClickListener onClickListener;
-
-    public TextItem(String name, String detail) {
-        this(name, detail, false, null);
-    }
-
-    public TextItem(String name, String detail, boolean enableCopy) {
-        this(name, detail, enableCopy, null);
-    }
-
-    public TextItem(String name, String detail, View.OnClickListener onClickListener) {
-        this(name, detail, false, onClickListener);
-    }
-
-    public TextItem(String name, String detail, boolean enableCopy, View.OnClickListener onClickListener) {
-        super(name);
-        this.detail = detail;
-        this.enableCopy = enableCopy;
-        this.onClickListener = onClickListener;
-    }
-
-    public String getDetail() {
-        return detail;
-    }
-
-    //  是否可复制文案
-    public boolean isEnableCopy() {
-        return enableCopy;
-    }
-
-    @Nullable
-    public View.OnClickListener getOnClickListener() {
-        return onClickListener;
-    }
-
-    @Override
-    public boolean isValid() {
-        if (TextUtils.isEmpty(detail)) {
-            return false;
+    override val isValid: Boolean
+        get() {
+            if (TextUtils.isEmpty(detail)) {
+                return false
+            }
+            return true
         }
-        return true;
-    }
 }

@@ -1,32 +1,28 @@
-package me.ele.uetool.base;
+package me.ele.uetool.base
 
-import android.os.Build;
-import android.util.Log;
-
-import me.weishu.reflection.Reflection;
+import android.os.Build
+import me.weishu.reflection.Reflection
 
 /**
  * 来自 weishu FreeReflection
  * https://github.com/tiann/FreeReflection
  */
-public class ReflectionP {
+object ReflectionP {
+    private const val TAG = "Reflection"
 
-    private static final String TAG = "Reflection";
-
-    public static <T> T breakAndroidP(Func<T> func) {
-        T result;
+    fun <T> breakAndroidP(func: Func<T>): T {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
-                Reflection.unseal(Application.getApplicationContext());
-            } catch (Exception e) {
-                e.printStackTrace();
+                Reflection.unseal(Application.getApplicationContext())
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
-        result = func.call();
-        return result;
+        val result = func.call()
+        return result
     }
 
-    public interface Func<T> {
-        T call();
+    interface Func<T> {
+        fun call(): T
     }
 }

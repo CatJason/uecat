@@ -95,7 +95,7 @@ class EditAttrLayout @JvmOverloads constructor(
         override fun triggerActionMove(event: MotionEvent) {
             targetElement?.let { element ->
                 var changed = false
-                val view = element.view
+                val view = element.view?: return
                 val diffX = event.x - lastX
                 if (diffX.absoluteValue >= moveUnit) {
                     view.translationX += diffX

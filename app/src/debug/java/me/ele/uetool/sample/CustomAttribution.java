@@ -13,12 +13,12 @@ public class CustomAttribution implements IAttrs {
     @Override
     public List<Item> getAttrs(Element element) {
         List<Item> items = new ArrayList<>();
-        if (element.getView() instanceof CustomView) {
-            CustomView view = (CustomView) element.getView();
+        if (element.view instanceof CustomView) {
+            CustomView view = (CustomView) element.view;
             items.add(new TextItem("More", view.getMoreAttribution()));
         }
-        if (element.getView().getTag(R.id.uetool_xml) != null) {
-            items.add(new TextItem("XML", element.getView().getTag(R.id.uetool_xml).toString()));
+        if (element.view.getTag(R.id.uetool_xml) != null) {
+            items.add(new TextItem("XML", element.view.getTag(R.id.uetool_xml).toString()));
         }
         return items;
     }

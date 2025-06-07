@@ -1,29 +1,28 @@
-package me.ele.uetool.attrdialog.binder;
+package me.ele.uetool.attrdialog.binder
 
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
-import me.ele.uetool.AttrsDialog;
-import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder;
-import me.ele.uetool.base.item.AddMinusEditItem;
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import me.ele.uetool.AttrsDialog
+import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder
+import me.ele.uetool.base.item.AddMinusEditItem
 
 /**
- * @author: weishenhong <a href="mailto:weishenhong@bytedance.com">contact me.</a>
- * @date: 2019-07-08 23:46
+ * @author weishenhong <a href="mailto:weishenhong@bytedance.com">contact me.</a>
+ * @date 2019-07-08 23:46
  */
-public class AddMinusEditTextItemBinder extends AttrsDialogItemViewBinder<AddMinusEditItem, AttrsDialog.Adapter.AddMinusEditViewHolder> {
+class AddMinusEditTextItemBinder : AttrsDialogItemViewBinder<AddMinusEditItem, AttrsDialog.Adapter.AddMinusEditViewHolder>() {
 
-    @NonNull
-    @Override
-    public AttrsDialog.Adapter.AddMinusEditViewHolder onCreateViewHolder(@NonNull LayoutInflater inflater, @NonNull ViewGroup parent, RecyclerView.Adapter adapter) {
-        return AttrsDialog.Adapter.AddMinusEditViewHolder.newInstance(parent);
-    }
+    override fun onCreateViewHolder(
+        inflater: LayoutInflater,
+        parent: ViewGroup,
+        adapter: RecyclerView.Adapter<*>
+    ) = AttrsDialog.Adapter.AddMinusEditViewHolder.newInstance(parent)
 
-    @Override
-    public void onBindViewHolder(@NonNull AttrsDialog.Adapter.AddMinusEditViewHolder holder, @NonNull AddMinusEditItem item) {
-        holder.bindView(item);
+    override fun onBindViewHolder(
+        holder: AttrsDialog.Adapter.AddMinusEditViewHolder,
+        item: AddMinusEditItem
+    ) {
+        holder.bindView(item)
     }
 }

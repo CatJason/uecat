@@ -18,7 +18,7 @@ import java.util.Locale
 
 class UETCore : IAttrs {
     override fun getAttrs(element: Element): List<Item> {
-        val view = element.view
+        val view = element.view?: return arrayListOf()
         return mutableListOf<Item>().apply {
             add(TextItem("Fragment", Util.getCurrentFragmentName(view)) { v ->
                 val activity = Util.getCurrentActivity()

@@ -1,8 +1,6 @@
-package me.ele.uetool.base.item;
+package me.ele.uetool.base.item
 
-public class Item {
-
-    public boolean isValid() {
-        return true;
-    }
+open class Item {
+    open val isValid: Boolean
+        get() = true
 }

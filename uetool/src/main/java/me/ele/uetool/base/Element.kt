@@ -1,81 +1,61 @@
-package me.ele.uetool.base;
+package me.ele.uetool.base
 
-import android.graphics.Rect;
-import android.os.Build;
-import android.view.View;
+import android.graphics.Rect
+import android.os.Build
+import android.view.View
 
-import java.util.Objects;
-
-public class Element {
-
-    private View view;
-    private Rect originRect = new Rect();
-    private Rect rect = new Rect();
-    private int[] location = new int[2];
-    private Element parentElement;
-
-    public Element(View view) {
-        this.view = view;
-        reset();
-        originRect.set(rect.left, rect.top, rect.right, rect.bottom);
-    }
-
-    public View getView() {
-        return view;
-    }
-
-    public Rect getRect() {
-        return rect;
-    }
-
-    public Rect getOriginRect() {
-        return originRect;
-    }
-
-    public void reset() {
-        view.getLocationOnScreen(location);
-        int width = view.getWidth();
-        int height = view.getHeight();
-
-        int left = location[0];
-        int right = left + width;
-        int top = location[1];
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            top -= DimenUtil.getStatusBarHeight();
-        }
-        int bottom = top + height;
-
-        rect.set(left, top, right, bottom);
-    }
-
-    public Element getParentElement() {
-        if (parentElement == null) {
-            Object parentView = view.getParent();
-            if (parentView instanceof View) {
-                parentElement = new Element((View) parentView);
+class Element(@JvmField val view: View) {
+    val originRect: Rect = Rect()
+    @JvmField
+    val rect: Rect = Rect()
+    private val location = IntArray(2)
+    var parentElement: Element? = null
+        get() {
+            if (field == null) {
+                val parentView: Any = view.parent
+                if (parentView is View) {
+                    field = Element(parentView)
+                }
             }
+            return field
         }
-        return parentElement;
+        private set
+
+    init {
+        reset()
+        originRect[rect.left, rect.top, rect.right] = rect.bottom
     }
 
-    //  view 的面积
-    public int getArea() {
-        return view.getWidth() * view.getHeight();
+    fun reset() {
+        view!!.getLocationOnScreen(location)
+        val width = view.width
+        val height = view.height
+
+        val left = location[0]
+        val right = left + width
+        var top = location[1]
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            top -= DimenUtil.getStatusBarHeight()
+        }
+        val bottom = top + height
+
+        rect[left, top, right] = bottom
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    val area: Int
+        //  view 的面积
+        get() = view!!.width * view.height
 
-        Element element = (Element) o;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
 
-        return Objects.equals(view, element.view);
+        val element = o as Element
 
+        return view == element.view
     }
 
-    @Override
-    public int hashCode() {
-        return view != null ? view.hashCode() : 0;
+    override fun hashCode(): Int {
+        return view?.hashCode() ?: 0
     }
 }

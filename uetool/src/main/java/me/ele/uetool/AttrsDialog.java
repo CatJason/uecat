@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.text.style.ForegroundColorSpan;
 import java.util.ArrayList;
 import java.util.List;
+
 import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder;
 import me.ele.uetool.attrdialog.AttrsDialogMultiTypePool;
 import me.ele.uetool.base.Element;
@@ -83,8 +84,8 @@ public class AttrsDialog extends Dialog {
         Window dialogWindow = getWindow();
         WindowManager.LayoutParams lp = dialogWindow.getAttributes();
         dialogWindow.setGravity(Gravity.LEFT | Gravity.TOP);
-        lp.x = element.getRect().left;
-        lp.y = element.getRect().bottom;
+        lp.x = element.rect.left;
+        lp.y = element.rect.bottom;
         lp.width = getScreenWidth() - dip2px(30);
         lp.height = getScreenHeight() / 2;
         dialogWindow.setAttributes(lp);
@@ -93,7 +94,7 @@ public class AttrsDialog extends Dialog {
         for (int i = 0; i < adapter.getItemCount(); i++) {
             Item item = adapter.getItem(i);
             if (item instanceof SwitchItem && ((SwitchItem) item).getType() == SwitchItem.Type.TYPE_SHOW_VALID_VIEWS) {
-                ((SwitchItem) item).setChecked(true);
+                ((SwitchItem) item).isChecked = true;
                 if (adapter.callback != null) {
                     adapter.callback.showValidViews(i, true);
                 }
@@ -164,7 +165,7 @@ public class AttrsDialog extends Dialog {
         boolean flag = false;
         for (int i = validElements.size() - 1; i >= 0; i--) {
             Element element = validElements.get(i);
-            if (element.getView().getClass().getName().equals("com.android.internal.policy.DecorView")) {
+            if (element.view.getClass().getName().equals("com.android.internal.policy.DecorView")) {
                 flag = true;
             }
             if (flag) {
@@ -291,7 +292,7 @@ public class AttrsDialog extends Dialog {
             @Override
             public void bindView(TitleItem titleItem) {
                 super.bindView(titleItem);
-                vTitle.setText(titleItem.getName());
+                vTitle.setText(titleItem.name);
             }
         }
 
@@ -313,11 +314,11 @@ public class AttrsDialog extends Dialog {
             @Override
             public void bindView(final TextItem textItem) {
                 super.bindView(textItem);
-                vName.setText(textItem.getName());
-                final String detail = textItem.getDetail();
-                if (textItem.getOnClickListener() != null) {
+                vName.setText(textItem.name);
+                final String detail = textItem.detail;
+                if (textItem.onClickListener != null) {
                     vDetail.setText(Html.fromHtml("<u>" + detail + "</u>"));
-                    vDetail.setOnClickListener(textItem.getOnClickListener());
+                    vDetail.setOnClickListener(textItem.onClickListener);
                 } else {
                     vDetail.setText(detail);
                     if (textItem.isEnableCopy()) {
@@ -350,58 +351,58 @@ public class AttrsDialog extends Dialog {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
-                        if (item.getType() == EditTextItem.Type.TYPE_TEXT) {
-                            TextView textView = ((TextView) (item.getElement().getView()));
+                        if (item.type == EditTextItem.Type.TYPE_TEXT) {
+                            TextView textView = ((TextView) (item.element.view));
                             if (!TextUtils.equals(textView.getText().toString(), s.toString())) {
                                 textView.setText(s.toString());
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_TEXT_SIZE) {
-                            TextView textView = ((TextView) (item.getElement().getView()));
+                        } else if (item.type == EditTextItem.Type.TYPE_TEXT_SIZE) {
+                            TextView textView = ((TextView) (item.element.view));
                             float textSize = Float.valueOf(s.toString());
                             if (textView.getTextSize() != textSize) {
                                 textView.setTextSize(textSize);
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_TEXT_COLOR) {
-                            TextView textView = ((TextView) (item.getElement().getView()));
+                        } else if (item.type == EditTextItem.Type.TYPE_TEXT_COLOR) {
+                            TextView textView = ((TextView) (item.element.view));
                             int color = Color.parseColor(vDetail.getText().toString());
                             if (color != textView.getCurrentTextColor()) {
                                 vColor.setBackgroundColor(color);
                                 textView.setTextColor(color);
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_WIDTH) {
-                            View view = item.getElement().getView();
+                        } else if (item.type == EditTextItem.Type.TYPE_WIDTH) {
+                            View view = item.element.view;
                             int width = dip2px(Integer.valueOf(s.toString()));
                             if (Math.abs(width - view.getWidth()) >= dip2px(1)) {
                                 view.getLayoutParams().width = width;
                                 view.requestLayout();
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_HEIGHT) {
-                            View view = item.getElement().getView();
+                        } else if (item.type == EditTextItem.Type.TYPE_HEIGHT) {
+                            View view = item.element.view;
                             int height = dip2px(Integer.valueOf(s.toString()));
                             if (Math.abs(height - view.getHeight()) >= dip2px(1)) {
                                 view.getLayoutParams().height = height;
                                 view.requestLayout();
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_PADDING_LEFT) {
-                            View view = item.getElement().getView();
+                        } else if (item.type == EditTextItem.Type.TYPE_PADDING_LEFT) {
+                            View view = item.element.view;
                             int paddingLeft = dip2px(Integer.valueOf(s.toString()));
                             if (Math.abs(paddingLeft - view.getPaddingLeft()) >= dip2px(1)) {
                                 view.setPadding(paddingLeft, view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom());
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_PADDING_RIGHT) {
-                            View view = item.getElement().getView();
+                        } else if (item.type == EditTextItem.Type.TYPE_PADDING_RIGHT) {
+                            View view = item.element.view;
                             int paddingRight = dip2px(Integer.valueOf(s.toString()));
                             if (Math.abs(paddingRight - view.getPaddingRight()) >= dip2px(1)) {
                                 view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), paddingRight, view.getPaddingBottom());
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_PADDING_TOP) {
-                            View view = item.getElement().getView();
+                        } else if (item.type == EditTextItem.Type.TYPE_PADDING_TOP) {
+                            View view = item.element.view;
                             int paddingTop = dip2px(Integer.valueOf(s.toString()));
                             if (Math.abs(paddingTop - view.getPaddingTop()) >= dip2px(1)) {
                                 view.setPadding(view.getPaddingLeft(), paddingTop, view.getPaddingRight(), view.getPaddingBottom());
                             }
-                        } else if (item.getType() == EditTextItem.Type.TYPE_PADDING_BOTTOM) {
-                            View view = item.getElement().getView();
+                        } else if (item.type == EditTextItem.Type.TYPE_PADDING_BOTTOM) {
+                            View view = item.element.view;
                             int paddingBottom = dip2px(Integer.valueOf(s.toString()));
                             if (Math.abs(paddingBottom - view.getPaddingBottom()) >= dip2px(1)) {
                                 view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(), paddingBottom);
@@ -433,11 +434,11 @@ public class AttrsDialog extends Dialog {
             @Override
             public void bindView(final T editTextItem) {
                 super.bindView(editTextItem);
-                vName.setText(editTextItem.getName());
-                vDetail.setText(editTextItem.getDetail());
+                vName.setText(editTextItem.name);
+                vDetail.setText(editTextItem.detail);
                 if (vColor != null) {
                     try {
-                        vColor.setBackgroundColor(Color.parseColor(editTextItem.getDetail()));
+                        vColor.setBackgroundColor(Color.parseColor(editTextItem.detail));
                         vColor.setVisibility(View.VISIBLE);
                     } catch (Exception e) {
                         vColor.setVisibility(View.GONE);
@@ -511,16 +512,16 @@ public class AttrsDialog extends Dialog {
                                 }
                                 return;
                             } else if (item.getType() == SwitchItem.Type.TYPE_SHOW_VALID_VIEWS) {
-                                if(item.isChecked() != isChecked) {
-                                    item.setChecked(isChecked);
+                                if(item.isChecked != isChecked) {
+                                    item.isChecked = isChecked;
                                     if (callback != null) {
                                         callback.showValidViews(getAdapterPosition(), isChecked);
                                     }
                                 }
                                 return;
                             }
-                            if (item.getElement().getView() instanceof TextView) {
-                                TextView textView = ((TextView) (item.getElement().getView()));
+                            if (item.element.view instanceof TextView) {
+                                TextView textView = ((TextView) (item.element.view));
                                 if (item.getType() == SwitchItem.Type.TYPE_IS_BOLD) {
                                     Typeface tf = Typeface.create(textView.getTypeface(), isChecked ? Typeface.BOLD : Typeface.NORMAL);
                                     textView.setTypeface(tf);
@@ -540,8 +541,8 @@ public class AttrsDialog extends Dialog {
             @Override
             public void bindView(SwitchItem switchItem) {
                 super.bindView(switchItem);
-                vName.setText(switchItem.getName());
-                vSwitch.setChecked(switchItem.isChecked());
+                vName.setText(switchItem.name);
+                vSwitch.setChecked(switchItem.isChecked);
             }
         }
 
@@ -569,8 +570,8 @@ public class AttrsDialog extends Dialog {
             public void bindView(BitmapItem bitmapItem) {
                 super.bindView(bitmapItem);
 
-                vName.setText(bitmapItem.getName());
-                Bitmap bitmap = bitmapItem.getBitmap();
+                vName.setText(bitmapItem.name);
+                Bitmap bitmap = bitmapItem.bitmap;
 
                 int height = Math.min(bitmap.getHeight(), imageHeight);
                 int width = (int) ((float) height / bitmap.getHeight() * bitmap.getWidth());
@@ -594,7 +595,7 @@ public class AttrsDialog extends Dialog {
                     @Override
                     public void onClick(View v) {
                         if (callback != null) {
-                            callback.selectView(item.getElement());
+                            callback.selectView(item.element);
                         }
                     }
                 });
@@ -625,7 +626,7 @@ public class AttrsDialog extends Dialog {
             @Override
             public void bindView(BriefDescItem briefDescItem) {
                 super.bindView(briefDescItem);
-                View view = briefDescItem.getElement().getView();
+                View view = briefDescItem.element.view;
                 String resName = Util.getResourceName(view.getId());
 
                 // 创建带样式的文本
@@ -633,7 +634,7 @@ public class AttrsDialog extends Dialog {
 
                 // 设置带样式的文本到 TextView
                 vDesc.setText(spannableText);
-                vDesc.setSelected(briefDescItem.isSelected());
+                vDesc.setSelected(briefDescItem.isSelected);
                 vDesc.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
             }
 

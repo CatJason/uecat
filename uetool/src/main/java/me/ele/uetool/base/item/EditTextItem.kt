@@ -1,63 +1,38 @@
-package me.ele.uetool.base.item;
+package me.ele.uetool.base.item
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import androidx.annotation.IntDef
+import me.ele.uetool.base.Element
 
-import me.ele.uetool.base.Element;
-
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_HEIGHT;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_PADDING_BOTTOM;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_PADDING_LEFT;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_PADDING_RIGHT;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_PADDING_TOP;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_TEXT;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_TEXT_COLOR;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_TEXT_SIZE;
-import static me.ele.uetool.base.item.EditTextItem.Type.TYPE_WIDTH;
-
-import androidx.annotation.IntDef;
-
-public class EditTextItem extends ElementItem {
-
-    private @Type
-    int type;
-    private String detail;
-
-    public EditTextItem(String name, Element element, @Type int type, String detail) {
-        super(name, element);
-        this.type = type;
-        this.detail = detail;
-    }
-
-    public String getDetail() {
-        return detail;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    @IntDef({
-            TYPE_TEXT,
-            TYPE_TEXT_SIZE,
-            TYPE_TEXT_COLOR,
-            TYPE_WIDTH,
-            TYPE_HEIGHT,
-            TYPE_PADDING_LEFT,
-            TYPE_PADDING_RIGHT,
-            TYPE_PADDING_TOP,
-            TYPE_PADDING_BOTTOM,
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Type {
-        int TYPE_TEXT = 1;
-        int TYPE_TEXT_SIZE = 2;
-        int TYPE_TEXT_COLOR = 3;
-        int TYPE_WIDTH = 4;
-        int TYPE_HEIGHT = 5;
-        int TYPE_PADDING_LEFT = 6;
-        int TYPE_PADDING_RIGHT = 7;
-        int TYPE_PADDING_TOP = 8;
-        int TYPE_PADDING_BOTTOM = 9;
+open class EditTextItem(
+    name: String,
+    element: Element,
+    @JvmField @field:Type @param:Type val type: Int,
+    @JvmField val detail: String
+) :
+    ElementItem(name, element) {
+    @IntDef(
+        Type.TYPE_TEXT,
+        Type.TYPE_TEXT_SIZE,
+        Type.TYPE_TEXT_COLOR,
+        Type.TYPE_WIDTH,
+        Type.TYPE_HEIGHT,
+        Type.TYPE_PADDING_LEFT,
+        Type.TYPE_PADDING_RIGHT,
+        Type.TYPE_PADDING_TOP,
+        Type.TYPE_PADDING_BOTTOM
+    )
+    @Retention(AnnotationRetention.SOURCE)
+    annotation class Type {
+        companion object {
+            const val TYPE_TEXT: Int = 1
+            const val TYPE_TEXT_SIZE: Int = 2
+            const val TYPE_TEXT_COLOR: Int = 3
+            const val TYPE_WIDTH: Int = 4
+            const val TYPE_HEIGHT: Int = 5
+            const val TYPE_PADDING_LEFT: Int = 6
+            const val TYPE_PADDING_RIGHT: Int = 7
+            const val TYPE_PADDING_TOP: Int = 8
+            const val TYPE_PADDING_BOTTOM: Int = 9
+        }
     }
 }

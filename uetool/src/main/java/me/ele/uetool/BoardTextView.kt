@@ -7,11 +7,11 @@ import androidx.core.content.ContextCompat
 import me.ele.uetool.base.DimenUtil
 
 class BoardTextView @JvmOverloads constructor(
-    context: Context?,
+    context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : AppCompatTextView(
-    context!!, attrs, defStyleAttr
+    context, attrs, defStyleAttr
 ) {
     private val defaultInfo = "点击\n退出"
     private val padding = DimenUtil.dip2px(3f)
