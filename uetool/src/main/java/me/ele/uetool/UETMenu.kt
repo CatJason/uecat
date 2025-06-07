@@ -20,10 +20,11 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.Interpolator
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import me.ele.uetool.TransparentActivity.Companion.TYPE_UNKNOWN
 
 class UETMenu @JvmOverloads constructor(
     context: Context,
-    private var y: Int = 0,
+    private var inputY: Int = 0,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
 ) : LinearLayout(context, attrs, defStyle) {
@@ -44,7 +45,6 @@ class UETMenu @JvmOverloads constructor(
     init {
         inflate(context, R.layout.uet_menu_layout, this)
         gravity = Gravity.CENTER_VERTICAL
-        this.y = y
         touchSlop = ViewConfiguration.get(context).scaledTouchSlop
         windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         vMenu = findViewById(R.id.menu)
@@ -54,14 +54,14 @@ class UETMenu @JvmOverloads constructor(
             UETSubMenu.SubMenu(
                 resources.getString(R.string.uet_catch_view),
                 R.drawable.uet_edit_attr
-            ) { open(TransparentActivity.Type.TYPE_EDIT_ATTR) })
+            ) { open(TransparentActivity.TYPE_EDIT_ATTR) })
         subMenus.add(UETSubMenu.SubMenu(
             resources.getString(R.string.uet_relative_location),
             R.drawable.uet_relative_position
-        ) { open(TransparentActivity.Type.TYPE_RELATIVE_POSITION) })
+        ) { open(TransparentActivity.TYPE_RELATIVE_POSITION) })
         subMenus.add(UETSubMenu.SubMenu(
             resources.getString(R.string.uet_grid), R.drawable.uet_show_gridding
-        ) { open(TransparentActivity.Type.TYPE_SHOW_GRIDDING) })
+        ) { open(TransparentActivity.TYPE_SHOW_GRIDDING) })
         subMenus.add(getSubMenu(resources, getContext()))
         for (subMenu in subMenus) {
             val uetSubMenu = UETSubMenu(getContext())
@@ -157,7 +157,7 @@ class UETMenu @JvmOverloads constructor(
         }
     }
 
-    private fun open(@TransparentActivity.Type type: Int = TransparentActivity.Type.TYPE_UNKNOWN) {
+    private fun open(type: Int = TYPE_UNKNOWN) {
         val currentTopActivity = Util.getCurrentActivity()
         if (currentTopActivity == null) {
             return
@@ -191,19 +191,20 @@ class UETMenu @JvmOverloads constructor(
 
     private val windowLayoutParams: WindowManager.LayoutParams
         get() {
-            params.width = FrameLayout.LayoutParams.WRAP_CONTENT
-            params.height = FrameLayout.LayoutParams.WRAP_CONTENT
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                params.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
-            } else {
-                params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            return params.apply {
+                width = FrameLayout.LayoutParams.WRAP_CONTENT
+                height = FrameLayout.LayoutParams.WRAP_CONTENT
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+                } else {
+                    type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                }
+                flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                format = PixelFormat.TRANSLUCENT
+                gravity = Gravity.TOP or Gravity.LEFT
+                x = 10
+                y = inputY
             }
-            params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-            params.format = PixelFormat.TRANSLUCENT
-            params.gravity = Gravity.TOP or Gravity.LEFT
-            params.x = 10
-            params.y = y
-            return params
         }
 
     private class ReverseInterpolator(private val mWrappedInterpolator: TimeInterpolator) :

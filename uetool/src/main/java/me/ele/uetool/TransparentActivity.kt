@@ -1,165 +1,174 @@
-package me.ele.uetool;
+package me.ele.uetool
 
-import android.annotation.SuppressLint;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.view.Gravity;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.Toast;
-import me.ele.uetool.base.DimenUtil;
+import android.annotation.SuppressLint
+import android.graphics.Color
+import android.os.Bundle
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.children
+import me.ele.uetool.base.DimenUtil.px2dip
+import kotlin.math.roundToInt
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+class TransparentActivity : AppCompatActivity() {
 
-import static android.view.Gravity.BOTTOM;
-import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static me.ele.uetool.TransparentActivity.Type.*;
-import static me.ele.uetool.base.DimenUtil.px2dip;
+    companion object {
+        const val EXTRA_TYPE = "extra_type"
 
-import androidx.annotation.IntDef;
-import androidx.appcompat.app.AppCompatActivity;
+        const val TYPE_UNKNOWN = -1
+        const val TYPE_EDIT_ATTR = 1
+        const val TYPE_SHOW_GRIDDING = 2
+        const val TYPE_RELATIVE_POSITION = 3
 
-public class TransparentActivity extends AppCompatActivity {
-
-    public static final String EXTRA_TYPE = "extra_type";
-
-    private ViewGroup vContainer;
-    private int type;
-
-    @Override
-    @SuppressLint("ClickableViewAccessibility")
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) {
-            finish();
-            return;
-        }
-        Util.setStatusBarColor(getWindow(), Color.TRANSPARENT);
-        Util.enableFullscreen(getWindow());
-        setContentView(R.layout.uet_activity_transparent);
-
-        vContainer = findViewById(R.id.container);
-
-        final BoardTextView board = new BoardTextView(this);
-        board.setOnClickListener(v -> {
-            UETool.INSTANCE.getTargetActivity().finish();
-            finish();
-        });
-        board.setGravity(Gravity.CENTER);
-
-        // 初始触摸位置
-        final float[] initialTouch = new float[2];
-
-        board.setOnTouchListener((v, event) -> {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    // 记录触摸位置
-                    initialTouch[0] = event.getRawX();
-                    initialTouch[1] = event.getRawY();
-                    break;
-
-                case MotionEvent.ACTION_MOVE:
-                    // 计算偏移量
-                    float dx = event.getRawX() - initialTouch[0];
-                    float dy = event.getRawY() - initialTouch[1];
-
-                    // 设置新的位置
-                    v.setX(v.getX() + dx);
-                    v.setY(v.getY() + dy);
-
-                    // 更新触摸位置
-                    initialTouch[0] = event.getRawX();
-                    initialTouch[1] = event.getRawY();
-                    break;
-
-                case MotionEvent.ACTION_UP:
-                    // 可以在这里处理点击事件或者其他事情
-                    break;
-            }
-            return true;
-        });
-
-
-        type = getIntent().getIntExtra(EXTRA_TYPE, TYPE_UNKNOWN);
-
-        switch (type) {
-            case TYPE_EDIT_ATTR:
-                EditAttrLayout editAttrLayout = new EditAttrLayout(this);
-                editAttrLayout.setOnDragListener(board::updateInfo);
-                vContainer.addView(editAttrLayout);
-                break;
-            case TYPE_RELATIVE_POSITION:
-                vContainer.addView(new RelativePositionLayout(this));
-                break;
-            case TYPE_SHOW_GRIDDING:
-                vContainer.addView(new GriddingLayout(this));
-                board.updateInfo("LINE_INTERVAL: " + px2dip(GriddingLayout.Companion.getLINE_INTERVAL(), true));
-                break;
-            default:
-                Toast.makeText(this, getString(R.string.uet_coming_soon), Toast.LENGTH_SHORT).show();
-                finish();
-                break;
-        }
-
-        int width = 100;
-        int height = 100;
-        int marginInDp = 20;
-
-        // 将宽度和高度转换为像素
-        Resources resources = getResources();
-        float scale = resources.getDisplayMetrics().density;
-        int widthInPx = (int) (width * scale + 0.5f);
-        int heightInPx = (int) (height * scale + 0.5f);
-        int marginInPx = (int) (marginInDp * scale + 0.5f);
-
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(widthInPx, heightInPx);
-        params.gravity = BOTTOM;
-        params.setMargins(marginInPx, marginInPx, marginInPx, marginInPx);
-        vContainer.addView(board, params);
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(0, 0);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        UETool.INSTANCE.release();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        finish();
-    }
-
-    public void dismissAttrsDialog() {
-        for (int i = 0; i < vContainer.getChildCount(); i++) {
-            View child = vContainer.getChildAt(i);
-            if (child instanceof EditAttrLayout) {
-                ((EditAttrLayout) child).dismissAttrsDialog();
-            }
-        }
-    }
-
-    @IntDef({
-            TYPE_UNKNOWN,
+        private val SUPPORTED_TYPES = setOf(
             TYPE_EDIT_ATTR,
-            TYPE_SHOW_GRIDDING,
             TYPE_RELATIVE_POSITION,
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Type {
-        int TYPE_UNKNOWN = -1;
-        int TYPE_EDIT_ATTR = 1;
-        int TYPE_SHOW_GRIDDING = 2;
-        int TYPE_RELATIVE_POSITION = 3;
+            TYPE_SHOW_GRIDDING
+        )
+    }
+
+    private lateinit var vContainer: ViewGroup
+    private var type: Int = TYPE_UNKNOWN
+    private val initialTouch = FloatArray(2)
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            finish()
+            return
+        }
+
+        setupWindow()
+        setContentView(R.layout.uet_activity_transparent)
+        initializeViews()
+    }
+
+    private fun setupWindow() {
+        Util.setStatusBarColor(window, Color.TRANSPARENT)
+        Util.enableFullscreen(window)
+    }
+
+    private fun initializeViews() {
+        vContainer = findViewById(R.id.container)
+        type = intent.getIntExtra(EXTRA_TYPE, TYPE_UNKNOWN)
+
+        if (type !in SUPPORTED_TYPES) {
+            showComingSoonToast()
+            return
+        }
+
+        setupFeatureViews()
+    }
+
+    private fun showComingSoonToast() {
+        Toast.makeText(this, R.string.uet_coming_soon, Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    private fun setupFeatureViews() {
+        val boardView = createBoardView().apply {
+            addFeatureView(this)
+            addToContainer()
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun createBoardView() = BoardTextView(this).apply {
+        setOnClickListener {
+            UETool.getTargetActivity()?.finish()
+            finish()
+        }
+        gravity = Gravity.CENTER
+        setOnTouchListener(createBoardTouchListener())
+    }
+
+    private fun createBoardTouchListener() = View.OnTouchListener { v, event ->
+        v ?: return@OnTouchListener false
+        event ?: return@OnTouchListener false
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                initialTouch[0] = event.rawX
+                initialTouch[1] = event.rawY
+            }
+            MotionEvent.ACTION_MOVE -> {
+                v.apply {
+                    x += event.rawX - initialTouch[0]
+                    y += event.rawY - initialTouch[1]
+                }
+                initialTouch[0] = event.rawX
+                initialTouch[1] = event.rawY
+            }
+        }
+        true
+    }
+
+    private fun addFeatureView(board: BoardTextView) {
+        when (type) {
+            TYPE_EDIT_ATTR -> setupEditAttrLayout(board)
+            TYPE_RELATIVE_POSITION -> setupRelativePositionLayout()
+            TYPE_SHOW_GRIDDING -> setupGriddingLayout(board)
+        }
+    }
+
+    private fun setupEditAttrLayout(board: BoardTextView) {
+        EditAttrLayout(this).apply {
+            setOnDragListener(createDragListener(board))
+            vContainer.addView(this)
+        }
+    }
+
+    private fun createDragListener(board: BoardTextView) =
+        object : EditAttrLayout.OnDragListener {
+            override fun showOffset(offsetContent: String) {
+                board.updateInfo(offsetContent)
+            }
+        }
+
+    private fun setupRelativePositionLayout() {
+        vContainer.addView(RelativePositionLayout(this))
+    }
+
+    private fun setupGriddingLayout(board: BoardTextView) {
+        vContainer.addView(GriddingLayout(this))
+        board.updateInfo("LINE_INTERVAL: ${px2dip(GriddingLayout.LINE_INTERVAL.toFloat(), true)}")
+    }
+
+    private fun BoardTextView.addToContainer() {
+        with(resources.displayMetrics.density) {
+            FrameLayout.LayoutParams(100.dpToPx(), 100.dpToPx()).apply {
+                gravity = Gravity.BOTTOM
+                setMargins(20.dpToPx(), 20.dpToPx(), 20.dpToPx(), 20.dpToPx())
+                vContainer.addView(this@addToContainer, this)
+            }
+        }
+    }
+
+    private fun Int.dpToPx() = (this * resources.displayMetrics.density).roundToInt()
+
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(0, 0)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        UETool.release()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        finish()
+    }
+
+    fun dismissAttrsDialog() {
+        vContainer.children.filterIsInstance<EditAttrLayout>().forEach {
+            it.dismissAttrsDialog()
+        }
     }
 }
