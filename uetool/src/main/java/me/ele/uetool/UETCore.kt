@@ -113,10 +113,11 @@ class UETCore : IAttrs {
         override fun getAttrs(element: Element): List<Item> {
             val items: MutableList<Item> = ArrayList()
             val imageView = element.view as ImageView
-            items.add(TitleItem("ImageView"))
-            items.add(BitmapItem("Bitmap", Util.getImageViewBitmap(imageView)))
-            items.add(TextItem("ScaleType", Util.getImageViewScaleType(imageView)))
-            return items
+            return items.apply {
+                add(TitleItem("ImageView"))
+                add(BitmapItem("Bitmap", Util.getImageViewBitmap(imageView)))
+                add(TextItem("ScaleType", Util.getImageViewScaleType(imageView)))
+            }
         }
     }
 }

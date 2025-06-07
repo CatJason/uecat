@@ -47,8 +47,6 @@ class RelativePositionLayout @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        if (relativeElements == null) return
-
         val doubleNotNull = relativeElements.all { it != null }
 
         relativeElements.forEach { element ->
