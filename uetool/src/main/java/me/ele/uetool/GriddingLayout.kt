@@ -1,77 +1,63 @@
-package me.ele.uetool;
+package me.ele.uetool
 
-import android.app.Activity;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
+import android.app.Activity
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.util.AttributeSet
+import android.view.MotionEvent
+import android.view.View
+import me.ele.uetool.base.DimenUtil.dip2px
+import me.ele.uetool.base.DimenUtil.getScreenHeight
+import me.ele.uetool.base.DimenUtil.getScreenWidth
 
-import static me.ele.uetool.base.DimenUtil.dip2px;
-import static me.ele.uetool.base.DimenUtil.getScreenHeight;
-import static me.ele.uetool.base.DimenUtil.getScreenWidth;
+class GriddingLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
-import androidx.annotation.Nullable;
-
-public class GriddingLayout extends View {
-
-    public static final int LINE_INTERVAL = dip2px(5);
-    private final int screenWidth = getScreenWidth();
-    private final int screenHeight = getScreenHeight();
-
-    private Paint paint = new Paint() {
-        {
-            setAntiAlias(true);
-            setColor(0x30000000);
-            setStrokeWidth(1);
-        }
-    };
-
-    private Activity bindActivity = UETool.INSTANCE.getTargetActivity();
-
-    public GriddingLayout(Context context) {
-        super(context);
+    companion object {
+        val LINE_INTERVAL = dip2px(5f)
     }
 
-    public GriddingLayout(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+    private val screenWidth = getScreenWidth()
+    private val screenHeight = getScreenHeight()
+
+    private val paint = Paint().apply {
+        isAntiAlias = true
+        color = 0x30000000
+        strokeWidth = 1f
     }
 
-    public GriddingLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
+    private var bindActivity: Activity? = UETool.getTargetActivity()
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        int startX = 0;
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        var startX = 0
         while (startX < screenWidth) {
-            canvas.drawLine(startX, 0, startX, screenHeight, paint);
-            startX = startX + LINE_INTERVAL;
+            canvas.drawLine(startX.toFloat(), 0f, startX.toFloat(), screenHeight.toFloat(), paint)
+            startX += LINE_INTERVAL
         }
 
-        int startY = 0;
+        var startY = 0
         while (startY < screenHeight) {
-            canvas.drawLine(0, startY, screenWidth, startY, paint);
-            startY = startY + LINE_INTERVAL;
+            canvas.drawLine(0f, startY.toFloat(), screenWidth.toFloat(), startY.toFloat(), paint)
+            startY += LINE_INTERVAL
         }
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        bindActivity.dispatchTouchEvent(event);
-        return super.dispatchTouchEvent(event);
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        bindActivity?.dispatchTouchEvent(event)
+        return super.dispatchTouchEvent(event)
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return true;
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return true
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        bindActivity = null;
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        bindActivity = null
     }
 }

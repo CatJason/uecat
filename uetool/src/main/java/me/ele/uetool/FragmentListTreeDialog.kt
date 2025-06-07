@@ -1,169 +1,156 @@
-package me.ele.uetool;
+package me.ele.uetool
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.Context;
-import android.graphics.Color;
-import android.graphics.RectF;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Bundle;
-import android.text.Html;
-import android.view.*;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
+import android.app.Dialog
+import android.content.Context
+import android.graphics.Color
+import android.graphics.RectF
+import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
+import android.text.Html
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
+import android.view.WindowManager
+import android.widget.CheckBox
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
+import me.ele.uetool.treeview.model.TreeNode
+import me.ele.uetool.treeview.view.AndroidTreeView
 
-import me.ele.uetool.treeview.view.AndroidTreeView;
-import me.ele.uetool.treeview.model.TreeNode;
+class FragmentListTreeDialog(context: Context) : Dialog(context), Provider {
 
-public class FragmentListTreeDialog extends Dialog implements Provider {
+    private lateinit var containerView: ViewGroup
+    private lateinit var regionView: RegionView
 
-    private ViewGroup containerView;
-    private RegionView regionView;
-
-    public FragmentListTreeDialog(Context context) {
-        super(context);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+    init {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.uet_dialog_fragment_list_tree)
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.uet_dialog_fragment_list_tree);
+        containerView = findViewById(R.id.container)
+        regionView = findViewById(R.id.region)
+        val checkBox = findViewById<CheckBox>(R.id.checkbox)
 
-        containerView = findViewById(R.id.container);
-        regionView = findViewById(R.id.region);
-        CheckBox checkBox = findViewById(R.id.checkbox);
+        createTree(checkBox.isChecked)
 
-        createTree(checkBox.isChecked());
-
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                createTree(isChecked);
-            }
-        });
-
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
+            createTree(isChecked)
+        }
     }
 
-    //  创建 fragment tree
-    private void createTree(boolean showPackageName) {
-        TreeNode root = TreeNode.root();
+    private fun createTree(showPackageName: Boolean) {
+        val root = TreeNode.root()
 
-        Activity activity = UETool.INSTANCE.getTargetActivity();
-        if (activity instanceof FragmentActivity) {
-            FragmentManager fragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
-            createTreeNode(root, fragmentManager, showPackageName);
+        val activity = UETool.getTargetActivity()
+        if (activity is FragmentActivity) {
+            val fragmentManager = activity.supportFragmentManager
+            createTreeNode(root, fragmentManager, showPackageName)
         }
 
-        containerView.removeAllViews();
+        containerView.removeAllViews()
 
-        AndroidTreeView tView = new AndroidTreeView(getContext(), root);
-        tView.setDefaultAnimation(true);
-        tView.setUse2dScroll(true);
-        tView.setDefaultContainerStyle(R.style.uet_TreeNodeStyleCustom);
-        containerView.addView(tView.getView());
-
-        tView.expandAll();
-    }
-
-    //  递归创建 fragment tree node
-    private TreeNode createTreeNode(TreeNode rootNode, FragmentManager fragmentManager, boolean showPackageName) {
-        for (Fragment fragment : fragmentManager.getFragments()) {
-            TreeNode node = new TreeNode(new TreeItem(fragment, showPackageName)).setViewHolder(new TreeItemVH(getContext(), this));
-            FragmentManager childManager = fragment.getChildFragmentManager();
-            rootNode.addChild(createTreeNode(node, childManager, showPackageName));
+        val tView = AndroidTreeView(context, root).apply {
+            setDefaultAnimation(true)
+            setUse2dScroll(true)
+            setDefaultContainerStyle(R.style.uet_TreeNodeStyleCustom)
         }
-        return rootNode;
+        containerView.addView(tView.view)
+
+        tView.expandAll()
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
-    }
-
-    @Override
-    public void onClickTreeItem(RectF rectF) {
-        regionView.drawRegion(rectF);
-    }
-
-    public static class TreeItemVH extends TreeNode.BaseNodeViewHolder<TreeItem> {
-
-        private TextView nameView;
-        private ImageView arrowView;
-
-        private Provider provider;
-
-        public TreeItemVH(Context context, Provider provider) {
-            super(context);
-            this.provider = provider;
+    private fun createTreeNode(rootNode: TreeNode, fragmentManager: FragmentManager, showPackageName: Boolean): TreeNode {
+        for (fragment in fragmentManager.fragments) {
+            val node = TreeNode(TreeItem(fragment, showPackageName)).setViewHolder(
+                TreeItemVH(context, this)
+            )
+            val childManager = fragment.childFragmentManager
+            rootNode.addChild(createTreeNode(node, childManager, showPackageName))
         }
+        return rootNode
+    }
 
-        @Override
-        public View createNodeView(TreeNode node, final TreeItem value) {
-            final View view = LayoutInflater.from(context).inflate(R.layout.uet_cell_tree, null, false);
+    override fun onStart() {
+        super.onStart()
+        window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+        }
+    }
 
-            nameView = view.findViewById(R.id.name);
-            arrowView = view.findViewById(R.id.arrow);
+    override fun onClickTreeItem(rectF: RectF) {
+        regionView.drawRegion(rectF)
+    }
 
-            nameView.setText(Html.fromHtml(value.name));
+    class TreeItemVH(context: Context, private val provider: Provider) : TreeNode.BaseNodeViewHolder<TreeItem>(context) {
 
-            if (value.rectF != null) {
-                nameView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (provider != null) {
-                            provider.onClickTreeItem(value.rectF);
-                        }
-                    }
-                });
+        private lateinit var nameView: TextView
+        private lateinit var arrowView: ImageView
+
+        override fun createNodeView(node: TreeNode, value: TreeItem): View {
+            val view = LayoutInflater.from(context).inflate(R.layout.uet_cell_tree, null, false)
+
+            nameView = view.findViewById(R.id.name)
+            arrowView = view.findViewById(R.id.arrow)
+
+            nameView.text = Html.fromHtml(value.name)
+
+            value.rectF?.let {
+                nameView.setOnClickListener { _ ->
+                    provider.onClickTreeItem(it)
+                }
             }
 
-            return view;
+            return view
         }
 
-        @Override
-        public void toggle(boolean active) {
-            super.toggle(active);
-
-            arrowView.animate().setDuration(200).rotation(active ? 90 : 0).start();
+        override fun toggle(active: Boolean) {
+            super.toggle(active)
+            arrowView.animate()
+                .setDuration(200)
+                .rotation(if (active) 90f else 0f)
+                .start()
         }
     }
 
-    public static class TreeItem {
+    class TreeItem(fragment: Fragment, showPackageName: Boolean) {
+        val name: String
+        val rectF: RectF?
 
-        public String name;
-        public RectF rectF;
-
-        public TreeItem(Fragment fragment, boolean showPackageName) {
-            initName(fragment, showPackageName);
-            initRect(fragment);
+        init {
+            name = initName(fragment, showPackageName)
+            rectF = initRect(fragment)
         }
 
-        private void initName(Fragment fragment, boolean showPackageName) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(showPackageName ? fragment.getClass().getName() : fragment.getClass().getSimpleName());
-            sb.append("[visible=").append(fragment.isVisible()).append(", hashCode=").append(fragment.hashCode()).append("]");
-            name = sb.toString();
-            if (fragment.isVisible()) {
-                name = "<u>" + name + "</u>";
+        private fun initName(fragment: Fragment, showPackageName: Boolean): String {
+            val sb = StringBuilder().apply {
+                append(if (showPackageName) fragment.javaClass.name else fragment.javaClass.simpleName)
+                append("[visible=${fragment.isVisible}, hashCode=${fragment.hashCode()}]")
             }
+            return if (fragment.isVisible) "<u>$sb</u>" else sb.toString()
         }
 
-        private void initRect(Fragment fragment) {
-            if (fragment.isVisible()) {
-                View view = fragment.getView();
-                int[] location = new int[2];
-                view.getLocationOnScreen(location);
-                rectF = new RectF(location[0], location[1], location[0] + view.getWidth(), location[1] + view.getHeight());
+        private fun initRect(fragment: Fragment): RectF? {
+            return if (fragment.isVisible) {
+                val view = fragment.view ?: return null
+                val location = IntArray(2)
+                view.getLocationOnScreen(location)
+                RectF(
+                    location[0].toFloat(),
+                    location[1].toFloat(),
+                    (location[0] + view.width).toFloat(),
+                    (location[1] + view.height).toFloat()
+                )
+            } else {
+                null
             }
         }
     }

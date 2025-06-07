@@ -18,6 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 import static android.view.Gravity.BOTTOM;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static me.ele.uetool.TransparentActivity.Type.*;
+import static me.ele.uetool.base.DimenUtil.px2dip;
 
 import androidx.annotation.IntDef;
 import androidx.appcompat.app.AppCompatActivity;
@@ -96,7 +97,7 @@ public class TransparentActivity extends AppCompatActivity {
                 break;
             case TYPE_SHOW_GRIDDING:
                 vContainer.addView(new GriddingLayout(this));
-                board.updateInfo("LINE_INTERVAL: " + DimenUtil.px2dip(GriddingLayout.LINE_INTERVAL, true));
+                board.updateInfo("LINE_INTERVAL: " + px2dip(GriddingLayout.Companion.getLINE_INTERVAL(), true));
                 break;
             default:
                 Toast.makeText(this, getString(R.string.uet_coming_soon), Toast.LENGTH_SHORT).show();

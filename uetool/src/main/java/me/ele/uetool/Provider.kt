@@ -1,9 +1,7 @@
-package me.ele.uetool;
+package me.ele.uetool
 
-import android.graphics.RectF;
+import android.graphics.RectF
 
-public interface Provider {
-
-    void onClickTreeItem(RectF rectF);
-
+interface Provider {
+    fun onClickTreeItem(rectF: RectF)
 }

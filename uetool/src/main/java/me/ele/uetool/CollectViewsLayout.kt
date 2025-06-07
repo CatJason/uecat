@@ -1,344 +1,320 @@
-package me.ele.uetool;
+package me.ele.uetool
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.graphics.*;
-import android.os.Build;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Toast;
-import me.ele.uetool.base.DimenUtil;
-import me.ele.uetool.base.Element;
-import me.ele.uetool.base.ReflectionP;
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.graphics.*
+import android.os.Build
+import android.util.AttributeSet
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.Toast
+import me.ele.uetool.base.Element
+import me.ele.uetool.base.ReflectionP
+import java.util.*
+import me.ele.uetool.base.ReflectionP.Func
+import me.ele.uetool.base.DimenUtil.dip2px
+import me.ele.uetool.base.DimenUtil.getScreenHeight
+import me.ele.uetool.base.DimenUtil.getScreenWidth
+import me.ele.uetool.base.DimenUtil.px2dip
+import me.ele.uetool.base.DimenUtil.sp2px
 
-import java.lang.reflect.Field;
-import java.util.*;
-import me.ele.uetool.base.ReflectionP.Func;
+open class CollectViewsLayout : View {
+    private val halfEndPointWidth = dip2px(2.5f)
+    private val textBgFillingSpace = dip2px(2f)
+    private val textLineDistance = dip2px(5f)
+    protected val screenWidth = getScreenWidth()
+    protected val screenHeight = getScreenHeight()
 
-import static me.ele.uetool.base.DimenUtil.*;
-
-import androidx.annotation.Nullable;
-
-public class CollectViewsLayout extends View {
-
-    private final int halfEndPointWidth = dip2px(2.5f);
-    private final int textBgFillingSpace = dip2px(2);
-    private final int textLineDistance = dip2px(5);
-    protected final int screenWidth = getScreenWidth();
-    protected final int screenHeight = getScreenHeight();
-
-    protected List<Element> elements = new ArrayList<>();
-    protected Element childElement, parentElement;
-    protected Paint textPaint = new Paint() {
-        {
-            setAntiAlias(true);
-            setTextSize(sp2px(10));
-            setColor(Color.RED);
-            setStrokeWidth(dip2px(1));
-        }
-    };
-
-    private Paint textBgPaint = new Paint() {
-        {
-            setAntiAlias(true);
-            setColor(Color.WHITE);
-            setStrokeJoin(Join.ROUND);
-        }
-    };
-
-    protected Paint dashLinePaint = new Paint() {
-        {
-            setAntiAlias(true);
-            setColor(0x90FF0000);
-            setStyle(Style.STROKE);
-            setPathEffect(new DashPathEffect(new float[]{dip2px(4), dip2px(8)}, 0));
-        }
-    };
-
-    public CollectViewsLayout(Context context) {
-        super(context);
+    protected var elements: MutableList<Element> = ArrayList()
+    protected var childElement: Element? = null
+    protected var parentElement: Element? = null
+    protected val textPaint = Paint().apply {
+        isAntiAlias = true
+        textSize = sp2px(10f).toFloat()
+        color = Color.RED
+        strokeWidth = dip2px(1f).toFloat()
     }
 
-    public CollectViewsLayout(Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
+    private val textBgPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.WHITE
+        strokeJoin = Paint.Join.ROUND
     }
 
-    public CollectViewsLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+    protected val dashLinePaint = Paint().apply {
+        isAntiAlias = true
+        color = 0x90FF0000.toInt()
+        style = Paint.Style.STROKE
+        pathEffect = DashPathEffect(floatArrayOf(dip2px(4f).toFloat(), dip2px(8f).toFloat()), 0f)
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
+    constructor(context: Context) : super(context)
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
         try {
-            final Activity targetActivity = UETool.INSTANCE.getTargetActivity();
-            final WindowManager windowManager = targetActivity.getWindowManager();
+            val targetActivity = UETool.getTargetActivity()?: return
+            val windowManager = targetActivity.windowManager
 
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-                final Field mGlobalField = Class.forName("android.view.WindowManagerImpl").getDeclaredField("mGlobal");
-                mGlobalField.setAccessible(true);
+                val mGlobalField = Class.forName("android.view.WindowManagerImpl").getDeclaredField("mGlobal")
+                mGlobalField.isAccessible = true
 
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-                    Field mViewsField = Class.forName("android.view.WindowManagerGlobal").getDeclaredField("mViews");
-                    mViewsField.setAccessible(true);
-                    List<View> views;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                        views = (List<View>) mViewsField.get(mGlobalField.get(windowManager));
+                    val mViewsField = Class.forName("android.view.WindowManagerGlobal").getDeclaredField("mViews")
+                    mViewsField.isAccessible = true
+                    val views: List<View> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        mViewsField.get(mGlobalField.get(windowManager)) as List<View>
                     } else {
-                        views = Arrays.asList((View[]) mViewsField.get(mGlobalField.get(windowManager)));
+                        (mViewsField.get(mGlobalField.get(windowManager)) as Array<View>).toList()
                     }
 
-                    for (int i = views.size() - 1; i >= 0; i--) {
-                        View targetView = getTargetDecorView(targetActivity, views.get(i));
+                    for (i in views.indices.reversed()) {
+                        val targetView = getTargetDecorView(targetActivity, views[i])
                         if (targetView != null) {
-                            createElements(targetView);
-                            break;
+                            createElements(targetView)
+                            break
                         }
                     }
                 } else {
-                    ReflectionP.breakAndroidP(new Func<Void>() {
-                        @Override
-                        public Void call() {
-                            try {
-                                Field mRootsField = Class.forName("android.view.WindowManagerGlobal").getDeclaredField("mRoots");
-                                mRootsField.setAccessible(true);
-                                List viewRootImpls;
-                                viewRootImpls = (List) mRootsField.get(mGlobalField.get(windowManager));
-                                for (int i = viewRootImpls.size() - 1; i >= 0; i--) {
-                                    Class clazz = Class.forName("android.view.ViewRootImpl");
-                                    Object object = viewRootImpls.get(i);
-                                    WindowManager.LayoutParams layoutParams = null;
-                                    try {
-                                        Field mWindowAttributesField = clazz.getDeclaredField("mWindowAttributes");
-                                        mWindowAttributesField.setAccessible(true);
-                                        layoutParams = (WindowManager.LayoutParams) mWindowAttributesField.get(object);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                    Field mViewField = clazz.getDeclaredField("mView");
-                                    mViewField.setAccessible(true);
-                                    View decorView = (View) mViewField.get(object);
-                                    if ((layoutParams != null && layoutParams.getTitle().toString().contains(targetActivity.getClass().getName()))
-                                            || getTargetDecorView(targetActivity, decorView) != null) {
-                                        createElements(decorView);
-                                        break;
-                                    }
+                    ReflectionP.breakAndroidP(Func<Void> {
+                        try {
+                            val mRootsField = Class.forName("android.view.WindowManagerGlobal").getDeclaredField("mRoots")
+                            mRootsField.isAccessible = true
+                            val viewRootImpls = mRootsField.get(mGlobalField.get(windowManager)) as List<*>
+                            for (i in viewRootImpls.indices.reversed()) {
+                                val clazz = Class.forName("android.view.ViewRootImpl")
+                                val obj = viewRootImpls[i]
+                                var layoutParams: WindowManager.LayoutParams? = null
+                                try {
+                                    val mWindowAttributesField = clazz.getDeclaredField("mWindowAttributes")
+                                    mWindowAttributesField.isAccessible = true
+                                    layoutParams = mWindowAttributesField.get(obj) as WindowManager.LayoutParams
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                                val mViewField = clazz.getDeclaredField("mView")
+                                mViewField.isAccessible = true
+                                val decorView = mViewField.get(obj) as View
+                                if ((layoutParams != null && layoutParams.title.toString().contains(targetActivity.javaClass.name))
+                                    || getTargetDecorView(targetActivity, decorView) != null) {
+                                    createElements(decorView)
+                                    break
+                                }
                             }
-                            return null;
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                    });
+                        null
+                    })
                 }
             } else {
                 // http://androidxref.com/4.1.1/xref/frameworks/base/core/java/android/view/WindowManagerImpl.java
-                Field mWindowManagerField = Class.forName("android.view.WindowManagerImpl$CompatModeWrapper").getDeclaredField("mWindowManager");
-                mWindowManagerField.setAccessible(true);
-                Field mViewsField = Class.forName("android.view.WindowManagerImpl").getDeclaredField("mViews");
-                mViewsField.setAccessible(true);
-                List<View> views = Arrays.asList((View[]) mViewsField.get(mWindowManagerField.get(windowManager)));
-                for (int i = views.size() - 1; i >= 0; i--) {
-                    View targetView = getTargetDecorView(targetActivity, views.get(i));
+                val mWindowManagerField = Class.forName("android.view.WindowManagerImpl\$CompatModeWrapper").getDeclaredField("mWindowManager")
+                mWindowManagerField.isAccessible = true
+                val mViewsField = Class.forName("android.view.WindowManagerImpl").getDeclaredField("mViews")
+                mViewsField.isAccessible = true
+                val views = (mViewsField.get(mWindowManagerField.get(windowManager)) as Array<View>).toList()
+                for (i in views.indices.reversed()) {
+                    val targetView = getTargetDecorView(targetActivity, views[i])
                     if (targetView != null) {
-                        createElements(targetView);
-                        break;
+                        createElements(targetView)
+                        break
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        elements.clear();
-        childElement = null;
-        parentElement = null;
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        elements.clear()
+        childElement = null
+        parentElement = null
     }
 
-    private void createElements(View view) {
+    private fun createElements(view: View) {
+        val elements = ArrayList<Element>()
+        traverse(view, elements)
 
-        List<Element> elements = new ArrayList<>();
-        traverse(view, elements);
+        // Sort by area in descending order
+        elements.sortWith(Comparator { o1, o2 -> o2.area - o1.area })
 
-        //  面积从大到小排序
-        Collections.sort(elements, new Comparator<Element>() {
-            @Override
-            public int compare(Element o1, Element o2) {
-                return o2.getArea() - o1.getArea();
-            }
-        });
-
-        this.elements.addAll(elements);
-
+        this.elements.addAll(elements)
     }
 
-    private void traverse(View view, List<Element> elements) {
-        if (UETool.INSTANCE.getFilterClasses().contains(view.getClass().getName())) return;
-        if (view.getAlpha() == 0 || view.getVisibility() != View.VISIBLE) return;
-        if (getResources().getString(R.string.uet_disable).equals(view.getTag())) return;
-        elements.add(new Element(view));
-        if (view instanceof ViewGroup) {
-            ViewGroup parent = (ViewGroup) view;
-            for (int i = 0; i < parent.getChildCount(); i++) {
-                traverse(parent.getChildAt(i), elements);
+    private fun traverse(view: View, elements: MutableList<Element>) {
+        if (UETool.getFilterClasses().contains(view.javaClass.name)) return
+        if (view.alpha == 0f || view.visibility != View.VISIBLE) return
+        if (resources.getString(R.string.uet_disable) == view.tag) return
+        elements.add(Element(view))
+        if (view is ViewGroup) {
+            val parent = view
+            for (i in 0 until parent.childCount) {
+                traverse(parent.getChildAt(i), elements)
             }
         }
     }
 
-    private View getTargetDecorView(Activity targetActivity, View decorView) {
-        if (decorView.getWidth() == 0 || decorView.getHeight() == 0) {
-            return null;
+    private fun getTargetDecorView(targetActivity: Activity, decorView: View): View? {
+        if (decorView.width == 0 || decorView.height == 0) {
+            return null
         }
-        Context context = null;
-        if (decorView instanceof ViewGroup && ((ViewGroup) decorView).getChildCount() > 0) {
-            context = ((ViewGroup) decorView).getChildAt(0).getContext();
+        var context: Context? = null
+        if (decorView is ViewGroup && decorView.childCount > 0) {
+            context = decorView.getChildAt(0).context
         }
 
         while (context != null) {
             if (context == targetActivity) {
-                return decorView;
-            } else if (context instanceof ContextWrapper) {
-                context = ((ContextWrapper) context).getBaseContext();
+                return decorView
+            } else if (context is ContextWrapper) {
+                context = (context as ContextWrapper).baseContext
             } else {
-                return null;
+                return null
             }
         }
-        return null;
+        return null
     }
 
-    protected Element getTargetElement(float x, float y) {
-        Element target = null;
-        for (int i = elements.size() - 1; i >= 0; i--) {
-            final Element element = elements.get(i);
-            if (element.getRect().contains((int) x, (int) y)) {
-                if (isParentNotVisible(element.getParentElement())) {
-                    continue;
+    protected fun getTargetElement(x: Float, y: Float): Element? {
+        var target: Element? = null
+        for (i in elements.indices.reversed()) {
+            val element = elements[i]
+            if (element.rect.contains(x.toInt(), y.toInt())) {
+                if (isParentNotVisible(element.parentElement)) {
+                    continue
                 }
                 if (element != childElement) {
-                    childElement = element;
-                    parentElement = element;
+                    childElement = element
+                    parentElement = element
                 } else if (parentElement != null) {
-                    parentElement = parentElement.getParentElement();
+                    parentElement = parentElement!!.parentElement
                 }
-                target = parentElement == null ? element : parentElement;
-                break;
+                target = parentElement ?: element
+                break
             }
         }
         if (target == null) {
-            Toast.makeText(getContext(), getResources().getString(R.string.uet_target_element_not_found, x, y), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, resources.getString(R.string.uet_target_element_not_found, x, y), Toast.LENGTH_SHORT).show()
         }
-        return target;
+        return target
     }
 
-    private boolean isParentNotVisible(Element parent) {
+    private fun isParentNotVisible(parent: Element?): Boolean {
         if (parent == null) {
-            return false;
+            return false
         }
-        if (parent.getRect().left >= DimenUtil.getScreenWidth()
-                || parent.getRect().top >= DimenUtil.getScreenHeight()) {
-            return true;
+        return if (parent.rect.left >= getScreenWidth()
+            || parent.rect.top >= getScreenHeight()
+        ) {
+            true
         } else {
-            return isParentNotVisible(parent.getParentElement());
+            isParentNotVisible(parent.parentElement)
         }
     }
 
-    protected List<Element> getTargetElements(float x, float y) {
-        List<Element> validList = new ArrayList<>();
-        for (int i = elements.size() - 1; i >= 0; i--) {
-            final Element element = elements.get(i);
-            if (element.getRect().contains((int) x, (int) y)) {
-                validList.add(element);
+    protected fun getTargetElements(x: Float, y: Float): List<Element> {
+        val validList = ArrayList<Element>()
+        for (i in elements.indices.reversed()) {
+            val element = elements[i]
+            if (element.rect.contains(x.toInt(), y.toInt())) {
+                validList.add(element)
             }
         }
-        return validList;
+        return validList
     }
 
-
-    protected void drawText(Canvas canvas, String text, float x, float y) {
-        float left = x - textBgFillingSpace;
-        float top = y - getTextHeight(text);
-        float right = x + getTextWidth(text) + textBgFillingSpace;
-        float bottom = y + textBgFillingSpace;
+    protected fun drawText(canvas: Canvas, text: String, x: Float, y: Float) {
+        var left = x - textBgFillingSpace
+        var top = y - getTextHeight(text)
+        var right = x + getTextWidth(text) + textBgFillingSpace
+        var bottom = y + textBgFillingSpace
         // ensure text in screen bound
         if (left < 0) {
-            right -= left;
-            left = 0;
+            right -= left
+            left = 0f
         }
         if (top < 0) {
-            bottom -= top;
-            top = 0;
+            bottom -= top
+            top = 0f
         }
         if (bottom > screenHeight) {
-            float diff = top - bottom;
-            bottom = screenHeight;
-            top = bottom + diff;
+            val diff = top - bottom
+            bottom = screenHeight.toFloat()
+            top = bottom + diff
         }
         if (right > screenWidth) {
-            float diff = left - right;
-            right = screenWidth;
-            left = right + diff;
+            val diff = left - right
+            right = screenWidth.toFloat()
+            left = right + diff
         }
-        canvas.drawRect(left, top, right, bottom, textBgPaint);
-        canvas.drawText(text, left + textBgFillingSpace, bottom - textBgFillingSpace, textPaint);
+        canvas.drawRect(left, top, right, bottom, textBgPaint)
+        canvas.drawText(text, left + textBgFillingSpace, bottom - textBgFillingSpace, textPaint)
     }
 
-    private void drawLineWithEndPoint(Canvas canvas, int startX, int startY, int endX, int endY) {
-        canvas.drawLine(startX, startY, endX, endY, textPaint);
+    private fun drawLineWithEndPoint(canvas: Canvas, startX: Int, startY: Int, endX: Int, endY: Int) {
+        canvas.drawLine(startX.toFloat(), startY.toFloat(), endX.toFloat(), endY.toFloat(), textPaint)
         if (startX == endX) {
-            canvas.drawLine(startX - halfEndPointWidth, startY, endX + halfEndPointWidth, startY, textPaint);
-            canvas.drawLine(startX - halfEndPointWidth, endY, endX + halfEndPointWidth, endY, textPaint);
+            canvas.drawLine((startX - halfEndPointWidth).toFloat(), startY.toFloat(), (endX + halfEndPointWidth).toFloat(), startY.toFloat(), textPaint)
+            canvas.drawLine((startX - halfEndPointWidth).toFloat(), endY.toFloat(), (endX + halfEndPointWidth).toFloat(), endY.toFloat(), textPaint)
         } else if (startY == endY) {
-            canvas.drawLine(startX, startY - halfEndPointWidth, startX, endY + halfEndPointWidth, textPaint);
-            canvas.drawLine(endX, startY - halfEndPointWidth, endX, endY + halfEndPointWidth, textPaint);
+            canvas.drawLine(startX.toFloat(), (startY - halfEndPointWidth).toFloat(), startX.toFloat(), (endY + halfEndPointWidth).toFloat(), textPaint)
+            canvas.drawLine(endX.toFloat(), (startY - halfEndPointWidth).toFloat(), endX.toFloat(), (endY + halfEndPointWidth).toFloat(), textPaint)
         }
     }
 
-    protected void drawLineWithText(Canvas canvas, int startX, int startY, int endX, int endY) {
-        drawLineWithText(canvas, startX, startY, endX, endY, 0);
+    protected open fun drawLineWithText(canvas: Canvas, startX: Int, startY: Int, endX: Int, endY: Int) {
+        drawLineWithText(canvas, startX, startY, endX, endY, 0)
     }
 
-    protected void drawLineWithText(Canvas canvas, int startX, int startY, int endX, int endY, int endPointSpace) {
-
+    protected fun drawLineWithText(canvas: Canvas, startX: Int, startY: Int, endX: Int, endY: Int, endPointSpace: Int) {
         if (startX == endX && startY == endY) {
-            return;
+            return
         }
 
-        if (startX > endX) {
-            int tempX = startX;
-            startX = endX;
-            endX = tempX;
+        var sX = startX
+        var sY = startY
+        var eX = endX
+        var eY = endY
+
+        if (sX > eX) {
+            val tempX = sX
+            sX = eX
+            eX = tempX
         }
-        if (startY > endY) {
-            int tempY = startY;
-            startY = endY;
-            endY = tempY;
+        if (sY > eY) {
+            val tempY = sY
+            sY = eY
+            eY = tempY
         }
 
-        if (startX == endX) {
-            drawLineWithEndPoint(canvas, startX, startY + endPointSpace, endX, endY - endPointSpace);
-            String text = px2dip(endY - startY, true);
-            drawText(canvas, text, startX + textLineDistance, startY + (endY - startY) / 2 + getTextHeight(text) / 2);
-        } else if (startY == endY) {
-            drawLineWithEndPoint(canvas, startX + endPointSpace, startY, endX - endPointSpace, endY);
-            String text = px2dip(endX - startX, true);
-            drawText(canvas, text, startX + (endX - startX) / 2 - getTextWidth(text) / 2, startY - textLineDistance);
+        if (sX == eX) {
+            drawLineWithEndPoint(canvas, sX, sY + endPointSpace, eX, eY - endPointSpace)
+            val text = px2dip((eY - sY).toFloat(), true)
+            drawText(canvas, text, (sX + textLineDistance).toFloat(), sY + (eY - sY) / 2 + getTextHeight(text) / 2)
+        } else if (sY == eY) {
+            drawLineWithEndPoint(canvas, sX + endPointSpace, sY, eX - endPointSpace, eY)
+            val text = px2dip((eX - sX).toFloat(), true)
+            drawText(canvas, text, sX + (eX - sX) / 2 - getTextWidth(text) / 2, (sY - textLineDistance).toFloat())
         }
     }
 
-    protected float getTextHeight(String text) {
-        Rect rect = new Rect();
-        textPaint.getTextBounds(text, 0, text.length(), rect);
-        return rect.height();
+    protected fun getTextHeight(text: String): Float {
+        val rect = Rect()
+        textPaint.getTextBounds(text, 0, text.length, rect)
+        return rect.height().toFloat()
     }
 
-    protected float getTextWidth(String text) {
-        return textPaint.measureText(text);
+    protected fun getTextWidth(text: String): Float {
+        return textPaint.measureText(text)
     }
 }
