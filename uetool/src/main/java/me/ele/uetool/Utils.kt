@@ -86,7 +86,7 @@ fun getTextViewDrawableBitmap(textView: TextView): List<Pair<String, Bitmap?>> {
     return bitmaps
 }
 
-public fun getDrawableBitmap(drawable: Drawable?): Bitmap? {
+fun getDrawableBitmap(drawable: Drawable?): Bitmap? {
     if (drawable == null) return null
 
     return try {
