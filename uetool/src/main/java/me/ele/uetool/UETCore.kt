@@ -20,29 +20,29 @@ class UETCore : IAttrs {
     override fun getAttrs(element: Element): List<Item> {
         val view = element.view?: return arrayListOf()
         return mutableListOf<Item>().apply {
-            add(TextItem("Fragment", Util.getCurrentFragmentName(view)) { v ->
-                val activity = Util.getCurrentActivity()
+            add(TextItem("Fragment", getCurrentFragmentName(view)) { v ->
+                val activity = getCurrentActivity()
                 if (activity is TransparentActivity) {
                     activity.dismissAttrsDialog()
                 }
                 FragmentListTreeDialog(v.context).show()
             })
-            add(TextItem("ViewHolder", Util.getViewHolderName(view)))
+            add(TextItem("ViewHolder", getViewHolderName(view)))
             add(SwitchItem("Move", element, SwitchItem.Type.TYPE_MOVE))
             add(SwitchItem("ValidViews", element, SwitchItem.Type.TYPE_SHOW_VALID_VIEWS))
             AttrsManager.createAttrs(view)?.let { addAll(it.getAttrs(element)) }
             add(TitleItem("COMMON"))
             add(TextItem("Class", view.javaClass.name))
-            add(TextItem("Id", Util.getResId(view)))
-            add(TextItem("ResName", Util.getResourceName(view.id)))
-            add(TextItem("Tag", Util.getViewTag(view)))
+            add(TextItem("Id", getResId(view)))
+            add(TextItem("ResName", getResourceName(view.id)))
+            add(TextItem("Tag", getViewTag(view)))
             add(TextItem("Clickable", view.isClickable.toString().uppercase(Locale.getDefault())))
-            add(TextItem("OnClickListener", Util.getViewClickListener(view)))
+            add(TextItem("OnClickListener", getViewClickListener(view)))
             add(TextItem("Focused", view.isFocused.toString().uppercase(Locale.getDefault())))
             add(AddMinusEditItem("Width（dp）", element, EditTextItem.Type.TYPE_WIDTH, DimenUtil.px2dip(view.width.toFloat())))
             add(AddMinusEditItem("Height（dp）", element, EditTextItem.Type.TYPE_HEIGHT, DimenUtil.px2dip(view.height.toFloat())))
             add(TextItem("Alpha", view.alpha.toString()))
-            when (val background = Util.getBackground(view)) {
+            when (val background = getBackground(view)) {
                 is String -> add(TextItem("Background", background))
                 is Bitmap -> add(BitmapItem("Background", background))
             }
@@ -90,10 +90,10 @@ class UETCore : IAttrs {
                     "TextColor",
                     element,
                     EditTextItem.Type.TYPE_TEXT_COLOR,
-                    Util.intToHexColor(textView.currentTextColor)
+                    intToHexColor(textView.currentTextColor)
                 )
             )
-            val pairs = Util.getTextViewBitmap(textView)
+            val pairs = getTextViewBitmap(textView)
             for (pair in pairs) {
                 items.add(BitmapItem(pair.first, pair.second))
             }
@@ -115,8 +115,11 @@ class UETCore : IAttrs {
             val imageView = element.view as ImageView
             return items.apply {
                 add(TitleItem("ImageView"))
-                add(BitmapItem("Bitmap", Util.getImageViewBitmap(imageView)))
-                add(TextItem("ScaleType", Util.getImageViewScaleType(imageView)))
+                val bitmap = getImageViewBitmap(imageView)
+                bitmap?.let {
+                    add(BitmapItem("Bitmap", it))
+                }
+                add(TextItem("ScaleType", getImageViewScaleType(imageView)))
             }
         }
     }

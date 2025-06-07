@@ -49,8 +49,8 @@ class TransparentActivity : AppCompatActivity() {
     }
 
     private fun setupWindow() {
-        Util.setStatusBarColor(window, Color.TRANSPARENT)
-        Util.enableFullscreen(window)
+        setStatusBarColor(window, Color.TRANSPARENT)
+        enableFullscreen(window)
     }
 
     private fun initializeViews() {

@@ -45,6 +45,9 @@ import me.ele.uetool.base.item.TextItem;
 import me.ele.uetool.base.item.TitleItem;
 import me.ele.uetool.cat.StringUtilKt;
 import me.ele.uetool.cat.ViewXRayKt;
+
+import static me.ele.uetool.UtilsKt.clipText;
+import static me.ele.uetool.UtilsKt.getResourceName;
 import static me.ele.uetool.base.DimenUtil.dip2px;
 import static me.ele.uetool.base.DimenUtil.getScreenHeight;
 import static me.ele.uetool.base.DimenUtil.getScreenWidth;
@@ -325,7 +328,7 @@ public class AttrsDialog extends Dialog {
                         vDetail.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                Util.clipText(detail);
+                                clipText(detail);
                             }
                         });
                     }
@@ -627,7 +630,7 @@ public class AttrsDialog extends Dialog {
             public void bindView(BriefDescItem briefDescItem) {
                 super.bindView(briefDescItem);
                 View view = briefDescItem.element.view;
-                String resName = Util.getResourceName(view.getId());
+                String resName = getResourceName(view.getId());
 
                 // 创建带样式的文本
                 SpannableString spannableText = buildDisplayTextWithStyles(view, resName);
