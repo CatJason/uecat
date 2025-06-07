@@ -5,10 +5,14 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.LinearGradient
 import android.graphics.NinePatch
+import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ClipDrawable
+import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.NinePatchDrawable
 import android.graphics.drawable.StateListDrawable
 import android.os.Build
@@ -280,5 +284,65 @@ private fun addSystemUiFlag(window: Window, flag: Int) {
 fun setStatusBarColor(window: Window, color: Int) {
     if (Build.VERSION.SDK_INT >= 21) {
         window.statusBarColor = color
+    }
+}
+
+fun getCurrentActivity(): Activity? {
+    return try {
+        val activityThreadClass = Class.forName("android.app.ActivityThread")
+        val currentActivityThreadMethod = activityThreadClass.getMethod("currentActivityThread")
+        val currentActivityThread = currentActivityThreadMethod.invoke(null)
+
+        val mActivitiesField = activityThreadClass.getDeclaredField("mActivities")
+        mActivitiesField.isAccessible = true
+        val activities = mActivitiesField.get(currentActivityThread) as? Map<*, *>
+
+        activities?.values?.firstOrNull { record ->
+            val recordClass = record?.javaClass ?: return@firstOrNull false
+            val pausedField = recordClass.getDeclaredField("paused").apply { isAccessible = true }
+            !(pausedField.get(record) as Boolean)
+        }?.let { record ->
+            val recordClass = record.javaClass
+            val activityField = recordClass.getDeclaredField("activity").apply { isAccessible = true }
+            activityField.get(record) as? Activity
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+fun View.getBackgroundInfo(): Any? {
+    val drawable = background ?: return null
+
+    return when (drawable) {
+        is ColorDrawable -> intToHexColor(drawable.color)
+        is GradientDrawable -> {
+            try {
+                val mFillPaintField = GradientDrawable::class.java.getDeclaredField("mFillPaint")
+                mFillPaintField.isAccessible = true
+                val mFillPaint = mFillPaintField.get(drawable) as? Paint
+                val shader = mFillPaint?.shader
+
+                if (shader is LinearGradient) {
+                    val mColorsField = LinearGradient::class.java.getDeclaredField("mColors")
+                    mColorsField.isAccessible = true
+                    val mColors = mColorsField.get(shader) as? IntArray
+
+                    mColors?.joinToString(" -> ") { color ->
+                        intToHexColor(color)
+                    }
+                } else {
+                    null
+                }
+            } catch (e: NoSuchFieldException) {
+                e.printStackTrace()
+                null
+            } catch (e: IllegalAccessException) {
+                e.printStackTrace()
+                null
+            }
+        }
+        else -> getDrawableBitmap(drawable)
     }
 }
