@@ -158,7 +158,7 @@ class UETMenu @JvmOverloads constructor(
     }
 
     private fun open(type: Int = TYPE_UNKNOWN) {
-        val currentTopActivity = getCurrentActivity()
+        val currentTopActivity = Util.getCurrentActivity()
         if (currentTopActivity == null) {
             return
         } else if (currentTopActivity.javaClass == TransparentActivity::class.java) {

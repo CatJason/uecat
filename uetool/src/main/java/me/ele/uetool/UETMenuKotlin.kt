@@ -9,7 +9,8 @@ fun getSubMenu(resources: Resources, context: Context): UETSubMenu.SubMenu {
         resources.getString(R.string.uet_scalpel),
         R.drawable.uet_scalpel
     ) {
-        val decorView = getCurrentActivity()?.window?.decorView as? ViewGroup?: return@SubMenu
+        val decorView =
+            Util.getCurrentActivity().window.decorView as ViewGroup
         val content = decorView.findViewById<ViewGroup>(android.R.id.content)
         val contentChild = content.getChildAt(0)
         if (contentChild != null) {

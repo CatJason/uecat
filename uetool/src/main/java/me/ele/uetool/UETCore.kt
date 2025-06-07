@@ -21,7 +21,7 @@ class UETCore : IAttrs {
         val view = element.view?: return arrayListOf()
         return mutableListOf<Item>().apply {
             add(TextItem("Fragment", getCurrentFragmentName(view)) { v ->
-                val activity = getCurrentActivity()
+                val activity = Util.getCurrentActivity()
                 if (activity is TransparentActivity) {
                     activity.dismissAttrsDialog()
                 }
@@ -42,7 +42,7 @@ class UETCore : IAttrs {
             add(AddMinusEditItem("Width（dp）", element, EditTextItem.Type.TYPE_WIDTH, DimenUtil.px2dip(view.width.toFloat())))
             add(AddMinusEditItem("Height（dp）", element, EditTextItem.Type.TYPE_HEIGHT, DimenUtil.px2dip(view.height.toFloat())))
             add(TextItem("Alpha", view.alpha.toString()))
-            when (val background = getBackground(view)) {
+            when (val background = Util.getBackground(view)) {
                 is String -> add(TextItem("Background", background))
                 is Bitmap -> add(BitmapItem("Background", background))
             }
@@ -115,10 +115,7 @@ class UETCore : IAttrs {
             val imageView = element.view as ImageView
             return items.apply {
                 add(TitleItem("ImageView"))
-                val bitmap = getImageViewBitmap(imageView)
-                bitmap?.let {
-                    add(BitmapItem("Bitmap", it))
-                }
+                add(BitmapItem("Bitmap", getImageViewBitmap(imageView)))
                 add(TextItem("ScaleType", getImageViewScaleType(imageView)))
             }
         }
