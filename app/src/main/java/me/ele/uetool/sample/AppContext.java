@@ -16,8 +16,8 @@ public class AppContext extends Application {
         super.onCreate();
         Fresco.initialize(this);
 
-        UETool.putFilterClass(FilterOutView.class);
-        UETool.putAttrsProviderClass(CustomAttribution.class);
+        UETool.INSTANCE.putFilterClass(FilterOutView.class);
+        UETool.INSTANCE.putAttrsProviderClass(CustomAttribution.class);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
@@ -34,7 +34,7 @@ public class AppContext extends Application {
                 public void onActivityStarted(Activity activity) {
                     visibleActivityCount++;
                     if (visibleActivityCount == 1 && uetoolDismissY >= 0) {
-                        UETool.showUETMenu(uetoolDismissY);
+                        UETool.INSTANCE.showUETMenu(uetoolDismissY);
                     }
                 }
 
@@ -52,7 +52,7 @@ public class AppContext extends Application {
                 public void onActivityStopped(Activity activity) {
                     visibleActivityCount--;
                     if (visibleActivityCount == 0) {
-                        uetoolDismissY = UETool.dismissUETMenu();
+                        uetoolDismissY = UETool.INSTANCE.dismissUETMenu();
                     }
                 }
 

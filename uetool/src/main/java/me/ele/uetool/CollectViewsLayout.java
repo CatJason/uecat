@@ -74,7 +74,7 @@ public class CollectViewsLayout extends View {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         try {
-            final Activity targetActivity = UETool.getInstance().getTargetActivity();
+            final Activity targetActivity = UETool.INSTANCE.getTargetActivity();
             final WindowManager windowManager = targetActivity.getWindowManager();
 
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
@@ -180,7 +180,7 @@ public class CollectViewsLayout extends View {
     }
 
     private void traverse(View view, List<Element> elements) {
-        if (UETool.getInstance().getFilterClasses().contains(view.getClass().getName())) return;
+        if (UETool.INSTANCE.getFilterClasses().contains(view.getClass().getName())) return;
         if (view.getAlpha() == 0 || view.getVisibility() != View.VISIBLE) return;
         if (getResources().getString(R.string.uet_disable).equals(view.getTag())) return;
         elements.add(new Element(view));

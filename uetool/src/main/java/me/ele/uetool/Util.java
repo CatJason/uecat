@@ -270,7 +270,7 @@ public class Util {
     //  获取当前 view 所在的最上层 fragment
     @Nullable
     public static Fragment getCurrentFragment(View targetView) {
-        Activity activity = UETool.getInstance().getTargetActivity();
+        Activity activity = UETool.INSTANCE.getTargetActivity();
         if (activity instanceof FragmentActivity) {
             List<Fragment> fragments = collectVisibleFragment(((FragmentActivity) activity).getSupportFragmentManager());
             for (int i = fragments.size() - 1; i >= 0; i--) {

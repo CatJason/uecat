@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,11 +31,11 @@ public class MainActivity extends AppCompatActivity {
         final SwitchCompat control = findViewById(R.id.control);
         control.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
-                if (!UETool.showUETMenu()) {
+                if (!UETool.INSTANCE.showUETMenu()) {
                     control.setChecked(false);
                 }
             } else {
-                UETool.dismissUETMenu();
+                UETool.INSTANCE.dismissUETMenu();
             }
         });
         control.setChecked(true);

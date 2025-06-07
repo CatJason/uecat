@@ -56,7 +56,7 @@ public class FragmentListTreeDialog extends Dialog implements Provider {
     private void createTree(boolean showPackageName) {
         TreeNode root = TreeNode.root();
 
-        Activity activity = UETool.getInstance().getTargetActivity();
+        Activity activity = UETool.INSTANCE.getTargetActivity();
         if (activity instanceof FragmentActivity) {
             FragmentManager fragmentManager = ((FragmentActivity) activity).getSupportFragmentManager();
             createTreeNode(root, fragmentManager, showPackageName);

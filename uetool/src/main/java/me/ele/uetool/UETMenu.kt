@@ -169,7 +169,7 @@ class UETMenu @JvmOverloads constructor(
         intent.putExtra(TransparentActivity.EXTRA_TYPE, type)
         currentTopActivity.startActivity(intent)
         currentTopActivity.overridePendingTransition(0, 0)
-        UETool.getInstance().targetActivity = currentTopActivity
+        UETool.setTargetActivity(currentTopActivity)
     }
 
     fun show() {

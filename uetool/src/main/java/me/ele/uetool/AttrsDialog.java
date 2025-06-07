@@ -206,7 +206,7 @@ public class AttrsDialog extends Dialog {
 
         public void notifyDataSetChanged(Element element) {
             items.clear();
-            for (String attrsProvider : UETool.getInstance().getAttrsProvider()) {
+            for (String attrsProvider : UETool.INSTANCE.getAttrsProvider()) {
                 try {
                     IAttrs attrs = (IAttrs) Class.forName(attrsProvider).newInstance();
                     items.addAll(attrs.getAttrs(element));
@@ -230,21 +230,21 @@ public class AttrsDialog extends Dialog {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            AttrsDialogMultiTypePool pool = UETool.getInstance().getAttrsDialogMultiTypePool();
+            AttrsDialogMultiTypePool pool = UETool.INSTANCE.getAttrsDialogMultiTypePool();
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             return pool.getItemViewBinder(viewType).onCreateViewHolder(inflater, parent, this);
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            AttrsDialogMultiTypePool pool = UETool.getInstance().getAttrsDialogMultiTypePool();
+            AttrsDialogMultiTypePool pool = UETool.INSTANCE.getAttrsDialogMultiTypePool();
             ((AttrsDialogItemViewBinder) pool.getItemViewBinder(holder.getItemViewType())).onBindViewHolder(holder, getItem(position));
         }
 
         @Override
         public int getItemViewType(int position) {
             Item item = getItem(position);
-            AttrsDialogMultiTypePool pool = UETool.getInstance().getAttrsDialogMultiTypePool();
+            AttrsDialogMultiTypePool pool = UETool.INSTANCE.getAttrsDialogMultiTypePool();
             return pool.getItemType(item);
         }
 

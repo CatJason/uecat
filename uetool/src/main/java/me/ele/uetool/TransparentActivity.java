@@ -45,7 +45,7 @@ public class TransparentActivity extends AppCompatActivity {
 
         final BoardTextView board = new BoardTextView(this);
         board.setOnClickListener(v -> {
-            UETool.getInstance().getTargetActivity().finish();
+            UETool.INSTANCE.getTargetActivity().finish();
             finish();
         });
         board.setGravity(Gravity.CENTER);
@@ -130,7 +130,7 @@ public class TransparentActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        UETool.getInstance().release();
+        UETool.INSTANCE.release();
     }
 
     @Override
