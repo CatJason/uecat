@@ -30,6 +30,11 @@ class UETSubMenu @JvmOverloads constructor(
 
     fun update(subMenu: SubMenu) {
         vImage.setImageResource(subMenu.imageRes)
+        val params = LayoutParams(
+            (20 * resources.displayMetrics.density).toInt(), // 宽度 20dp → px
+            (20 * resources.displayMetrics.density).toInt()   // 高度 20dp → px
+        )
+        vImage.layoutParams = params
         vTitle.text = subMenu.title
         setOnClickListener(subMenu.onClickListener)
     }
