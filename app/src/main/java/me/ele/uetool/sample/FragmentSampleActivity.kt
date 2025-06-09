@@ -1,19 +1,18 @@
-package me.ele.uetool.sample;
+package me.ele.uetool.sample
 
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import me.ele.uetool.sample.ui.fragmentsample.FragmentSampleFragment;
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import me.ele.uetool.sample.ui.fragmentsample.FragmentSampleFragment
 
-public class FragmentSampleActivity extends AppCompatActivity {
+class FragmentSampleActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.fragment_sample_activity)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_sample_activity);
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, FragmentSampleFragment.newInstance())
-                    .commitNow();
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.container, FragmentSampleFragment.newInstance())
+                .commitNow()
         }
     }
 }

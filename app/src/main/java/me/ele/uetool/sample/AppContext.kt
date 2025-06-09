@@ -1,71 +1,61 @@
-package me.ele.uetool.sample;
+package me.ele.uetool.sample
 
-import android.app.Activity;
-import android.app.Application;
-import android.os.Build;
-import android.os.Bundle;
+import android.app.Activity
+import android.app.Application
+import android.os.Build
+import android.os.Bundle
+import com.facebook.drawee.backends.pipeline.Fresco
+import me.ele.uetool.UETool
 
-import com.facebook.drawee.backends.pipeline.Fresco;
+class AppContext : Application() {
 
-import me.ele.uetool.UETool;
+    override fun onCreate() {
+        super.onCreate()
+        Fresco.initialize(this)
 
-public class AppContext extends Application {
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Fresco.initialize(this);
-
-        UETool.INSTANCE.putFilterClass(FilterOutView.class);
-        UETool.INSTANCE.putAttrsProviderClass(CustomAttribution.class);
+        // Changed from UETool.INSTANCE.method() to UETool.method()
+        UETool.putFilterClass(FilterOutView::class.java)
+        UETool.putAttrsProviderClass(CustomAttribution::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+                private var visibleActivityCount = 0
+                private var uetoolDismissY = -1
 
-                private int visibleActivityCount;
-                private int uetoolDismissY = -1;
-
-                @Override
-                public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
+                override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                    // No implementation needed
                 }
 
-                @Override
-                public void onActivityStarted(Activity activity) {
-                    visibleActivityCount++;
+                override fun onActivityStarted(activity: Activity) {
+                    visibleActivityCount++
                     if (visibleActivityCount == 1 && uetoolDismissY >= 0) {
-                        UETool.INSTANCE.showUETMenu(uetoolDismissY);
+                        UETool.showUETMenu(uetoolDismissY)
                     }
                 }
 
-                @Override
-                public void onActivityResumed(Activity activity) {
-
+                override fun onActivityResumed(activity: Activity) {
+                    // No implementation needed
                 }
 
-                @Override
-                public void onActivityPaused(Activity activity) {
-
+                override fun onActivityPaused(activity: Activity) {
+                    // No implementation needed
                 }
 
-                @Override
-                public void onActivityStopped(Activity activity) {
-                    visibleActivityCount--;
+                override fun onActivityStopped(activity: Activity) {
+                    visibleActivityCount--
                     if (visibleActivityCount == 0) {
-                        uetoolDismissY = UETool.INSTANCE.dismissUETMenu();
+                        uetoolDismissY = UETool.dismissUETMenu()
                     }
                 }
 
-                @Override
-                public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
+                override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+                    // No implementation needed
                 }
 
-                @Override
-                public void onActivityDestroyed(Activity activity) {
-
+                override fun onActivityDestroyed(activity: Activity) {
+                    // No implementation needed
                 }
-            });
+            })
         }
     }
 }
