@@ -3,64 +3,135 @@ package me.ele.uetool
 import android.content.Context
 import android.content.res.Resources
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup
 
+// 配置类用于自定义3D视图参数
+data class ScalpelConfig(
+    val drawIds: Boolean = true,
+    val interactionEnabled: Boolean = true,
+    val zAxisScale: Float = 1.5f,
+    val tagIdentifier: String = "UET_SCALPEL_TAG"
+)
+
 fun getSubMenu(resources: Resources, context: Context): UETSubMenu.SubMenu {
+    // 默认配置
+    val config = ScalpelConfig()
+
     return UETSubMenu.SubMenu(
         resources.getString(R.string.uet_scalpel),
         R.drawable.icon_2d_to_3d
     ) {
-        // 获取当前Activity的DecorView
-        Log.d("ScalpelMenu", "开始处理3D视图层级菜单")
-        val decorView = getCurrentActivity()?.window?.decorView as? ViewGroup?: run {
-            Log.w("ScalpelMenu", "无法获取DecorView，可能Activity不存在或已销毁")
-            return@SubMenu
-        }
+        try {
+            Log.d("ScalpelMenu", "开始处理3D视图切换")
 
-        // 获取内容区域ViewGroup
-        val content = decorView.findViewById<ViewGroup>(android.R.id.content).also {
-            Log.d("ScalpelMenu", "找到内容区域ViewGroup: ${it.javaClass.simpleName}")
-        }
-
-        // 获取内容区域的第一个子视图
-        val contentChild = content.getChildAt(0).also {
-            if (it == null) {
-                Log.w("ScalpelMenu", "内容区域没有子视图，无法创建3D效果")
-            } else {
-                Log.d("ScalpelMenu", "获取到根内容视图: ${it.javaClass.simpleName}")
+            val activity = getCurrentActivity() ?: run {
+                Log.w("ScalpelMenu", "无有效Activity")
+                return@SubMenu
             }
-        } ?: return@SubMenu
 
-        // 移除所有视图准备重建
-        content.removeAllViews()
-        Log.d("ScalpelMenu", "已清空内容区域视图")
+            val decorView = activity.window?.decorView as? ViewGroup ?: run {
+                Log.w("ScalpelMenu", "无法获取DecorView")
+                return@SubMenu
+            }
 
-        if (contentChild is ScalpelFrameLayout) {
-            // 如果已经是Scalpel视图，则重置
-            Log.d("ScalpelMenu", "检测到现有Scalpel布局，进行重置操作")
-            content.addView(
-                contentChild.apply {
-                    getChildAt(0)?.also { child ->
-                        Log.d("ScalpelMenu", "从Scalpel布局中移除子视图: ${child.javaClass.simpleName}")
-                    }
-                    removeAllViews()
-                }
-            )
-        } else {
-            // 创建新的Scalpel容器
-            Log.d("ScalpelMenu", "创建新的ScalpelFrameLayout容器")
-            content.addView(
-                ScalpelFrameLayout(context).apply {
-                    Log.d("ScalpelMenu", "初始化Scalpel参数: 启用3D交互和ID显示")
-                    isLayerInteractionEnabled = true
-                    setDrawIds(true)
-                    addView(contentChild).also {
-                        Log.d("ScalpelMenu", "将原始内容视图添加到Scalpel容器中")
-                    }
-                }
-            )
+            val content = decorView.findViewById<ViewGroup>(android.R.id.content) ?: run {
+                Log.w("ScalpelMenu", "未找到内容区域")
+                return@SubMenu
+            }
+
+            // 检查是否已存在Scalpel容器
+            content.findViewWithTag<ScalpelFrameLayout>(config.tagIdentifier)?.let { scalpel ->
+                Log.d("ScalpelMenu", "检测到现有3D视图，执行恢复操作")
+                restoreOriginalView(scalpel, content)
+                return@SubMenu
+            }
+
+            // 创建新的3D视图
+            setupScalpelView(content, context, config)
+
+        } catch (e: Exception) {
+            Log.e("ScalpelMenu", "3D视图切换失败", e)
+        }
+    }
+}
+
+/**
+ * 恢复原始视图布局
+ */
+private fun restoreOriginalView(scalpel: ScalpelFrameLayout, content: ViewGroup) {
+    // 获取原始视图
+    val originalView = scalpel.getChildAt(0) ?: run {
+        Log.w("ScalpelMenu", "3D容器中没有子视图")
+        return
+    }
+
+    // 保存布局参数
+    val layoutParams = scalpel.layoutParams
+
+    // 移除3D容器
+    scalpel.removeAllViews()
+    content.removeView(scalpel)
+
+    // 恢复原始视图
+    content.addView(originalView, 0, layoutParams)
+
+    Log.i("ScalpelMenu", "已恢复原始视图布局")
+}
+
+/**
+ * 设置3D视图
+ */
+private fun setupScalpelView(content: ViewGroup, context: Context, config: ScalpelConfig) {
+    // 获取根视图
+    val rootView = content.getChildAt(0) ?: run {
+        Log.w("ScalpelMenu", "内容区域无子视图")
+        return
+    }
+
+    // 保存原始布局参数
+    val originalParams = rootView.layoutParams ?: ViewGroup.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.MATCH_PARENT
+    )
+
+    // 移除原始视图
+    content.removeView(rootView)
+
+    // 创建并配置3D容器
+    ScalpelFrameLayout(context).apply {
+        tag = config.tagIdentifier
+        isLayerInteractionEnabled = config.interactionEnabled
+        setDrawIds(config.drawIds)
+
+        // 设置Z轴缩放
+        try {
+            val field = javaClass.getDeclaredField("mZAxisScale")
+            field.isAccessible = true
+            field.setFloat(this, config.zAxisScale)
+        } catch (e: Exception) {
+            Log.w("ScalpelMenu", "设置Z轴缩放失败", e)
         }
 
-        Log.i("ScalpelMenu", "3D视图层级菜单设置完成")
+        // 添加原始视图
+        addView(rootView, originalParams)
+
+        // 添加到内容区域
+        content.addView(this, originalParams)
+
+        Log.i("ScalpelMenu", "3D视图已启用 (drawIds=${config.drawIds}, interaction=${config.interactionEnabled})")
     }
+}
+
+/**
+ * 扩展函数：简化查找视图操作
+ */
+private inline fun <reified T : View> ViewGroup.findViewWithTag(tagValue: Any): T? {
+    for (i in 0 until childCount) {
+        val child = getChildAt(i)
+        if (child is T && child.tag == tagValue) {
+            return child
+        }
+    }
+    return null
 }
