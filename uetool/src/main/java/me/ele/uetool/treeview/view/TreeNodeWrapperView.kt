@@ -1,51 +1,54 @@
-package me.ele.uetool.treeview.view;
+package me.ele.uetool.treeview.view
 
-import android.content.Context;
-import android.view.ContextThemeWrapper;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import me.ele.uetool.R;
+import android.content.Context
+import android.util.AttributeSet
+import android.view.ContextThemeWrapper
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import me.ele.uetool.R
 
-/**
- * Created by Bogdan Melnychuk on 2/10/15.
- */
-public class TreeNodeWrapperView extends LinearLayout {
-    private LinearLayout nodeItemsContainer;
-    private ViewGroup nodeContainer;
-    private final int containerStyle;
+class TreeNodeWrapperView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+    private val containerStyle: Int = 0
+) : LinearLayout(context, attrs, defStyleAttr) {
 
-    public TreeNodeWrapperView(Context context, int containerStyle) {
-        super(context);
-        this.containerStyle = containerStyle;
-        init();
+    private lateinit var nodeItemsContainer: LinearLayout
+    private lateinit var nodeContainer: ViewGroup
+
+    init {
+        initViews()
     }
 
-    private void init() {
-        setOrientation(LinearLayout.VERTICAL);
+    // Secondary constructor for Java compatibility
+    constructor(context: Context, containerStyle: Int) : this(context, null, 0, containerStyle)
 
-        nodeContainer = new RelativeLayout(getContext());
-        nodeContainer.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        nodeContainer.setId(R.id.node_header);
+    private fun initViews() {
+        orientation = VERTICAL
 
-        ContextThemeWrapper newContext = new ContextThemeWrapper(getContext(), containerStyle);
-        nodeItemsContainer = new LinearLayout(newContext, null, containerStyle);
-        nodeItemsContainer.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        nodeItemsContainer.setId(R.id.node_items);
-        nodeItemsContainer.setOrientation(LinearLayout.VERTICAL);
-        nodeItemsContainer.setVisibility(View.GONE);
+        nodeContainer = RelativeLayout(context).apply {
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            id = R.id.node_header
+        }
 
-        addView(nodeContainer);
-        addView(nodeItemsContainer);
+        val newContext = ContextThemeWrapper(context, containerStyle)
+        nodeItemsContainer = LinearLayout(newContext, null, containerStyle).apply {
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            id = R.id.node_items
+            orientation = VERTICAL
+            visibility = View.GONE
+        }
+
+        addView(nodeContainer)
+        addView(nodeItemsContainer)
     }
 
-
-    public void insertNodeView(View nodeView) {
-        nodeContainer.addView(nodeView);
+    fun insertNodeView(nodeView: View) {
+        nodeContainer.addView(nodeView)
     }
 
-    public ViewGroup getNodeContainer() {
-        return nodeContainer;
-    }
+    fun getNodeContainer(): ViewGroup = nodeContainer
 }
