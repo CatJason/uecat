@@ -1,29 +1,19 @@
-package me.ele.uetool.treeview.holder;
+package me.ele.uetool.treeview.holder
 
-import android.content.Context;
-import android.view.View;
-import android.widget.TextView;
+import android.content.Context
+import android.view.View
+import android.widget.TextView
+import me.ele.uetool.treeview.model.TreeNode
 
-import me.ele.uetool.treeview.model.TreeNode;
+class SimpleViewHolder(context: Context) : TreeNode.BaseNodeViewHolder<Any>(context) {
 
-/**
- * Created by Bogdan Melnychuk on 2/11/15.
- */
-public class SimpleViewHolder extends TreeNode.BaseNodeViewHolder<Object> {
-
-    public SimpleViewHolder(Context context) {
-        super(context);
+    override fun createNodeView(node: TreeNode, value: Any): View {
+        val tv = TextView(context)
+        tv.text = value.toString()
+        return tv
     }
 
-    @Override
-    public View createNodeView(TreeNode node, Object value) {
-        final TextView tv = new TextView(context);
-        tv.setText(String.valueOf(value));
-        return tv;
-    }
-
-    @Override
-    public void toggle(boolean active) {
-
+    override fun toggle(active: Boolean) {
+        // No implementation needed
     }
 }
