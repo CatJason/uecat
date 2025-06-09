@@ -109,15 +109,19 @@ object UETool {
         val context = Application.getApplicationContext()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-            requestPermission(context)
-            Toast.makeText(context, "After grant this permission, re-enable UETool", Toast.LENGTH_LONG).show()
+            if (context != null) {
+                requestPermission(context)
+                Toast.makeText(context, "After grant this permission, re-enable UETool", Toast.LENGTH_LONG).show()
+            }
             return false
         }
 
         return synchronized(this) {
-            val menu = uetMenuRef?.get() ?: UETMenu(context, y).also {
-                uetMenuRef = WeakReference(it)
-            }
+            val menu = uetMenuRef?.get() ?: context?.let {
+                UETMenu(it, y).also {
+                    uetMenuRef = WeakReference(it)
+                }
+            }?: return false
 
             if (!menu.isShown) {
                 menu.show()

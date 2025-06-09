@@ -242,12 +242,12 @@ fun getResId(view: View): String {
 }
 
 fun getResourceName(id: Int): String {
-    val resources = Application.getApplicationContext().resources
+    val resources = Application.getApplicationContext()?.resources
     try {
         return if (id == View.NO_ID || id == 0) {
             ""
         } else {
-            resources.getResourceEntryName(id)
+            resources?.getResourceEntryName(id)?: ""
         }
     } catch (e: Exception) {
         e.printStackTrace()
@@ -260,7 +260,7 @@ fun getImageViewBitmap(imageView: ImageView): Bitmap? {
 }
 
 fun clipText(clipText: String?) {
-    val context = Application.getApplicationContext()
+    val context = Application.getApplicationContext()?: return
     val clipData = ClipData.newPlainText("", clipText)
     ((context.getSystemService(Context.CLIPBOARD_SERVICE)) as ClipboardManager).setPrimaryClip(
         clipData

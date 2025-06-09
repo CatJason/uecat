@@ -32,24 +32,52 @@ android {
         jvmTarget = "11"
     }
 
-    afterEvaluate {
-        publishing {
-            val versionName = "1.0.2"
-            publications {
-                create<MavenPublication>("release") {
-                    from(components["release"])
-                    groupId = "me.ele.uetool"
-                    artifactId = "uetool"
-                    version = versionName
+    // 添加组件发布配置（方案二）
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        val versionName = "1.0.9"
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "me.ele.uetool"
+                artifactId = "uetool"
+                version = versionName
+
+                // 可选的 POM 配置
+                pom {
+                    name.set("UETool")
+                    description.set("A tool for Android UI development")
+                    url.set("https://github.com/your-repo/uetool")
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("0001")
+                            name.set("catJason")
+                            email.set("jason20121221.email@example.com")
+                        }
+                    }
                 }
             }
-            repositories {
-                maven {
-                    val baseUrl = buildDir.parent
-                    val releasesRepoUrl = "$baseUrl/repos/releases"
-                    val snapshotsRepoUrl = "$baseUrl/repos/snapshots"
-                    url = uri(if (versionName.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                }
+        }
+        repositories {
+            maven {
+                val baseUrl = buildDir.parent
+                val releasesRepoUrl = "$baseUrl/repos/releases"
+                val snapshotsRepoUrl = "$baseUrl/repos/snapshots"
+                url = uri(if (versionName.endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
             }
         }
     }
