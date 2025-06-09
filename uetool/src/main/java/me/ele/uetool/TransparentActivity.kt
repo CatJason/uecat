@@ -3,16 +3,10 @@ package me.ele.uetool
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
-import android.view.Gravity
-import android.view.MotionEvent
-import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
-import me.ele.uetool.base.px2dip
-import kotlin.math.roundToInt
 
 class TransparentActivity : AppCompatActivity() {
 
@@ -71,85 +65,30 @@ class TransparentActivity : AppCompatActivity() {
     }
 
     private fun setupFeatureViews() {
-        val boardView = createBoardView().apply {
-            addFeatureView(this)
-            addToContainer()
-        }
+        addFeatureView()
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun createBoardView() = BoardTextView(this).apply {
-        setOnClickListener {
-            UETool.getTargetActivity()?.finish()
-            finish()
-        }
-        gravity = Gravity.CENTER
-        setOnTouchListener(createBoardTouchListener())
-    }
-
-    private fun createBoardTouchListener() = View.OnTouchListener { v, event ->
-        v ?: return@OnTouchListener false
-        event ?: return@OnTouchListener false
-
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                initialTouch[0] = event.rawX
-                initialTouch[1] = event.rawY
-            }
-            MotionEvent.ACTION_MOVE -> {
-                v.apply {
-                    x += event.rawX - initialTouch[0]
-                    y += event.rawY - initialTouch[1]
-                }
-                initialTouch[0] = event.rawX
-                initialTouch[1] = event.rawY
-            }
-        }
-        true
-    }
-
-    private fun addFeatureView(board: BoardTextView) {
+    private fun addFeatureView() {
         when (type) {
-            TYPE_EDIT_ATTR -> setupEditAttrLayout(board)
+            TYPE_EDIT_ATTR -> setupEditAttrLayout()
             TYPE_RELATIVE_POSITION -> setupRelativePositionLayout()
-            TYPE_SHOW_GRIDDING -> setupGriddingLayout(board)
+            TYPE_SHOW_GRIDDING -> setupGriddingLayout()
         }
     }
 
-    private fun setupEditAttrLayout(board: BoardTextView) {
+    private fun setupEditAttrLayout() {
         EditAttrLayout(this).apply {
-            setOnDragListener(createDragListener(board))
             vContainer.addView(this)
         }
     }
-
-    private fun createDragListener(board: BoardTextView) =
-        object : EditAttrLayout.OnDragListener {
-            override fun showOffset(offsetContent: String) {
-                board.updateInfo(offsetContent)
-            }
-        }
 
     private fun setupRelativePositionLayout() {
         vContainer.addView(RelativePositionLayout(this))
     }
 
-    private fun setupGriddingLayout(board: BoardTextView) {
+    private fun setupGriddingLayout() {
         vContainer.addView(GriddingLayout(this))
-        board.updateInfo("LINE_INTERVAL: ${px2dip(GriddingLayout.LINE_INTERVAL.toFloat(), true)}")
     }
-
-    private fun BoardTextView.addToContainer() {
-        with(resources.displayMetrics.density) {
-            FrameLayout.LayoutParams(100.dpToPx(), 100.dpToPx()).apply {
-                gravity = Gravity.BOTTOM
-                setMargins(20.dpToPx(), 20.dpToPx(), 20.dpToPx(), 20.dpToPx())
-                vContainer.addView(this@addToContainer, this)
-            }
-        }
-    }
-
-    private fun Int.dpToPx() = (this * resources.displayMetrics.density).roundToInt()
 
     override fun finish() {
         super.finish()
@@ -158,7 +97,6 @@ class TransparentActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        UETool.release()
     }
 
     override fun onStop() {
