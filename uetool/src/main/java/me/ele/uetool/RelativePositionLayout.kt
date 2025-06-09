@@ -7,8 +7,8 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.MotionEvent
-import me.ele.uetool.base.DimenUtil.dip2px
 import me.ele.uetool.base.Element
+import me.ele.uetool.base.dip2px
 
 class RelativePositionLayout @JvmOverloads constructor(
     context: Context,

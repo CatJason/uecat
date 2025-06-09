@@ -11,7 +11,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
-import me.ele.uetool.base.DimenUtil.px2dip
+import me.ele.uetool.base.px2dip
 import kotlin.math.roundToInt
 
 class TransparentActivity : AppCompatActivity() {

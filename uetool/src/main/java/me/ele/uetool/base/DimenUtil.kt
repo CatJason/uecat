@@ -1,52 +1,45 @@
-package me.ele.uetool.base;
+package me.ele.uetool.base
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.util.TypedValue;
+import android.content.Context
+import android.util.TypedValue
 
-// TODO 有内存泄漏风险待优化
+private val CONTEXT: Context? get() = Application.getApplicationContext()
 
-public class DimenUtil {
-    private static final Context CONTEXT = Application.getApplicationContext();
+fun px2dip(pxValue: Float): String {
+    return px2dip(pxValue, false)
+}
 
-    private DimenUtil() {
+fun px2dip(pxValue: Float, withUnit: Boolean): String {
+    val scale = CONTEXT?.resources?.displayMetrics?.density ?: return ""
+    return "${(pxValue / scale + 0.5F).toInt()}${if (withUnit) "dp" else ""}"
+}
 
-    }
+fun dip2px(dpValue: Float): Int {
+    val scale = CONTEXT?.resources?.displayMetrics?.density ?: return 0
+    return (dpValue * scale + 0.5F).toInt()
+}
 
-    public static String px2dip(float pxValue) {
-        return px2dip(pxValue, false);
-    }
+fun sp2px(sp: Float): Int {
+    return CONTEXT?.resources?.displayMetrics?.let {
+        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, it).toInt()
+    } ?: 0
+}
 
-    public static String px2dip(float pxValue, boolean withUnit) {
-        float scale = CONTEXT.getResources().getDisplayMetrics().density;
-        return (int) (pxValue / scale + 0.5F) + (withUnit ? "dp" : "");
-    }
+fun px2sp(pxValue: Float): String {
+    val fontScale = CONTEXT?.resources?.displayMetrics?.scaledDensity ?: return "0"
+    return "${(pxValue / fontScale + 0.5f).toInt()}"
+}
 
-    public static int dip2px(float dpValue) {
-        float scale = CONTEXT.getResources().getDisplayMetrics().density;
-        return (int) (dpValue * scale + 0.5F);
-    }
+fun getScreenWidth(): Int {
+    return CONTEXT?.resources?.displayMetrics?.widthPixels ?: 0
+}
 
-    public static int sp2px(float sp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, CONTEXT.getResources().getDisplayMetrics());
-    }
+fun getScreenHeight(): Int {
+    return CONTEXT?.resources?.displayMetrics?.heightPixels ?: 0
+}
 
-    public static String px2sp(float pxValue) {
-        final float fontScale = CONTEXT.getResources().getDisplayMetrics().scaledDensity;
-        return String.valueOf((int) (pxValue / fontScale + 0.5f));
-    }
-
-    public static int getScreenWidth() {
-        return CONTEXT.getResources().getDisplayMetrics().widthPixels;
-    }
-
-    public static int getScreenHeight() {
-        return CONTEXT.getResources().getDisplayMetrics().heightPixels;
-    }
-
-    public static int getStatusBarHeight() {
-        Resources resources = CONTEXT.getResources();
-        int resId = resources.getIdentifier("status_bar_height", "dimen", "android");
-        return resId > 0 ? resources.getDimensionPixelSize(resId) : 0;
-    }
+fun getStatusBarHeight(): Int {
+    val resources = CONTEXT?.resources ?: return 0
+    val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
+    return if (resId > 0) resources.getDimensionPixelSize(resId) else 0
 }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
-import me.ele.uetool.base.DimenUtil
+import me.ele.uetool.base.dip2px
 
 class BoardTextView @JvmOverloads constructor(
     context: Context,
@@ -14,7 +14,7 @@ class BoardTextView @JvmOverloads constructor(
     context, attrs, defStyleAttr
 ) {
     private val defaultInfo = "点击\n退出"
-    private val padding = DimenUtil.dip2px(3f)
+    private val padding = dip2px(3f)
 
     init {
         initView()
@@ -31,7 +31,7 @@ class BoardTextView @JvmOverloads constructor(
                 context, R.drawable.uet_close
             ), null
         )
-        compoundDrawablePadding = DimenUtil.dip2px(2f)
+        compoundDrawablePadding = dip2px(2f)
     }
 
     fun updateInfo(info: String) {

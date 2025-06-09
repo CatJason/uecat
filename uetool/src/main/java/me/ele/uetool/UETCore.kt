@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import me.ele.uetool.base.DimenUtil
 import me.ele.uetool.base.Element
 import me.ele.uetool.base.IAttrs
 import me.ele.uetool.base.item.AddMinusEditItem
@@ -14,11 +13,13 @@ import me.ele.uetool.base.item.Item
 import me.ele.uetool.base.item.SwitchItem
 import me.ele.uetool.base.item.TextItem
 import me.ele.uetool.base.item.TitleItem
+import me.ele.uetool.base.px2dip
+import me.ele.uetool.base.px2sp
 import java.util.Locale
 
 class UETCore : IAttrs {
     override fun getAttrs(element: Element): List<Item> {
-        val view = element.view?: return arrayListOf()
+        val view = element.view
         return mutableListOf<Item>().apply {
             add(TextItem("Fragment", getCurrentFragmentName(view)) { v ->
                 val activity = getCurrentActivity()
@@ -39,17 +40,17 @@ class UETCore : IAttrs {
             add(TextItem("Clickable", view.isClickable.toString().uppercase(Locale.getDefault())))
             add(TextItem("OnClickListener", getViewClickListener(view)))
             add(TextItem("Focused", view.isFocused.toString().uppercase(Locale.getDefault())))
-            add(AddMinusEditItem("Width（dp）", element, EditTextItem.Type.TYPE_WIDTH, DimenUtil.px2dip(view.width.toFloat())))
-            add(AddMinusEditItem("Height（dp）", element, EditTextItem.Type.TYPE_HEIGHT, DimenUtil.px2dip(view.height.toFloat())))
+            add(AddMinusEditItem("Width（dp）", element, EditTextItem.Type.TYPE_WIDTH, px2dip(view.width.toFloat())))
+            add(AddMinusEditItem("Height（dp）", element, EditTextItem.Type.TYPE_HEIGHT, px2dip(view.height.toFloat())))
             add(TextItem("Alpha", view.alpha.toString()))
             when (val background = view.getBackgroundInfo()) {
                 is String -> add(TextItem("Background", background))
                 is Bitmap -> add(BitmapItem("Background", background))
             }
-            add(AddMinusEditItem("PaddingLeft（dp）", element, EditTextItem.Type.TYPE_PADDING_LEFT, DimenUtil.px2dip(view.paddingLeft.toFloat())))
-            add(AddMinusEditItem("PaddingRight（dp）", element, EditTextItem.Type.TYPE_PADDING_RIGHT, DimenUtil.px2dip(view.paddingRight.toFloat())))
-            add(AddMinusEditItem("PaddingTop（dp）", element, EditTextItem.Type.TYPE_PADDING_TOP, DimenUtil.px2dip(view.paddingTop.toFloat())))
-            add(AddMinusEditItem("PaddingBottom（dp）", element, EditTextItem.Type.TYPE_PADDING_BOTTOM, DimenUtil.px2dip(view.paddingBottom.toFloat())))
+            add(AddMinusEditItem("PaddingLeft（dp）", element, EditTextItem.Type.TYPE_PADDING_LEFT, px2dip(view.paddingLeft.toFloat())))
+            add(AddMinusEditItem("PaddingRight（dp）", element, EditTextItem.Type.TYPE_PADDING_RIGHT, px2dip(view.paddingRight.toFloat())))
+            add(AddMinusEditItem("PaddingTop（dp）", element, EditTextItem.Type.TYPE_PADDING_TOP, px2dip(view.paddingTop.toFloat())))
+            add(AddMinusEditItem("PaddingBottom（dp）", element, EditTextItem.Type.TYPE_PADDING_BOTTOM, px2dip(view.paddingBottom.toFloat())))
         }
     }
 
@@ -82,7 +83,7 @@ class UETCore : IAttrs {
                     "TextSize（sp）",
                     element,
                     EditTextItem.Type.TYPE_TEXT_SIZE,
-                    DimenUtil.px2sp(textView.textSize)
+                    px2sp(textView.textSize)
                 )
             )
             items.add(

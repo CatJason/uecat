@@ -5,9 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
-import me.ele.uetool.base.DimenUtil.dip2px
-import me.ele.uetool.base.DimenUtil.px2dip
 import me.ele.uetool.base.Element
+import me.ele.uetool.base.dip2px
+import me.ele.uetool.base.px2dip
 import kotlin.math.absoluteValue
 
 class EditAttrLayout @JvmOverloads constructor(
@@ -95,7 +95,7 @@ class EditAttrLayout @JvmOverloads constructor(
         override fun triggerActionMove(event: MotionEvent) {
             targetElement?.let { element ->
                 var changed = false
-                val view = element.view?: return
+                val view = element.view
                 val diffX = event.x - lastX
                 if (diffX.absoluteValue >= moveUnit) {
                     view.translationX += diffX

@@ -27,7 +27,7 @@ class Element(@JvmField val view: View) {
     }
 
     fun reset() {
-        view!!.getLocationOnScreen(location)
+        view.getLocationOnScreen(location)
         val width = view.width
         val height = view.height
 
@@ -35,7 +35,7 @@ class Element(@JvmField val view: View) {
         val right = left + width
         var top = location[1]
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            top -= DimenUtil.getStatusBarHeight()
+            top -= getStatusBarHeight()
         }
         val bottom = top + height
 
@@ -44,7 +44,7 @@ class Element(@JvmField val view: View) {
 
     val area: Int
         //  view 的面积
-        get() = view!!.width * view.height
+        get() = view.width * view.height
 
     override fun equals(o: Any?): Boolean {
         if (this === o) return true
@@ -56,6 +56,6 @@ class Element(@JvmField val view: View) {
     }
 
     override fun hashCode(): Int {
-        return view?.hashCode() ?: 0
+        return view.hashCode()
     }
 }

@@ -6,7 +6,7 @@ import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import me.ele.uetool.base.DimenUtil.dip2px
+import me.ele.uetool.base.dip2px
 
 class UETSubMenu @JvmOverloads constructor(
     context: Context,

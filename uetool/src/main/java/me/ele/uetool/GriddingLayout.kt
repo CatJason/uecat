@@ -7,9 +7,9 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import me.ele.uetool.base.DimenUtil.dip2px
-import me.ele.uetool.base.DimenUtil.getScreenHeight
-import me.ele.uetool.base.DimenUtil.getScreenWidth
+import me.ele.uetool.base.dip2px
+import me.ele.uetool.base.getScreenHeight
+import me.ele.uetool.base.getScreenWidth
 
 class GriddingLayout @JvmOverloads constructor(
     context: Context,

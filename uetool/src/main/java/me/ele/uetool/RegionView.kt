@@ -7,7 +7,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
-import me.ele.uetool.base.DimenUtil.dip2px
+import me.ele.uetool.base.dip2px
 
 class RegionView @JvmOverloads constructor(
     context: Context,

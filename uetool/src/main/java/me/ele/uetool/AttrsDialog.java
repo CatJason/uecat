@@ -32,6 +32,7 @@ import java.util.List;
 
 import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder;
 import me.ele.uetool.attrdialog.AttrsDialogMultiTypePool;
+import me.ele.uetool.base.DimenUtilKt;
 import me.ele.uetool.base.Element;
 import me.ele.uetool.base.IAttrs;
 import me.ele.uetool.base.ItemArrayList;
@@ -48,9 +49,6 @@ import me.ele.uetool.cat.ViewXRayKt;
 
 import static me.ele.uetool.UtilsKt.clipText;
 import static me.ele.uetool.UtilsKt.getResourceName;
-import static me.ele.uetool.base.DimenUtil.dip2px;
-import static me.ele.uetool.base.DimenUtil.getScreenHeight;
-import static me.ele.uetool.base.DimenUtil.getScreenWidth;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -89,8 +87,8 @@ public class AttrsDialog extends Dialog {
         dialogWindow.setGravity(Gravity.LEFT | Gravity.TOP);
         lp.x = element.rect.left;
         lp.y = element.rect.bottom;
-        lp.width = getScreenWidth() - dip2px(30);
-        lp.height = getScreenHeight() / 2;
+        lp.width = DimenUtilKt.getScreenWidth() - DimenUtilKt.dip2px(30);
+        lp.height = DimenUtilKt.getScreenHeight() / 2;
         dialogWindow.setAttributes(lp);
         adapter.notifyDataSetChanged(element);
         layoutManager.scrollToPosition(0);
@@ -374,40 +372,40 @@ public class AttrsDialog extends Dialog {
                             }
                         } else if (item.type == EditTextItem.Type.TYPE_WIDTH) {
                             View view = item.element.view;
-                            int width = dip2px(Integer.valueOf(s.toString()));
-                            if (Math.abs(width - view.getWidth()) >= dip2px(1)) {
+                            int width = DimenUtilKt.dip2px(Integer.valueOf(s.toString()));
+                            if (Math.abs(width - view.getWidth()) >= DimenUtilKt.dip2px(1)) {
                                 view.getLayoutParams().width = width;
                                 view.requestLayout();
                             }
                         } else if (item.type == EditTextItem.Type.TYPE_HEIGHT) {
                             View view = item.element.view;
-                            int height = dip2px(Integer.valueOf(s.toString()));
-                            if (Math.abs(height - view.getHeight()) >= dip2px(1)) {
+                            int height = DimenUtilKt.dip2px(Integer.valueOf(s.toString()));
+                            if (Math.abs(height - view.getHeight()) >= DimenUtilKt.dip2px(1)) {
                                 view.getLayoutParams().height = height;
                                 view.requestLayout();
                             }
                         } else if (item.type == EditTextItem.Type.TYPE_PADDING_LEFT) {
                             View view = item.element.view;
-                            int paddingLeft = dip2px(Integer.valueOf(s.toString()));
-                            if (Math.abs(paddingLeft - view.getPaddingLeft()) >= dip2px(1)) {
+                            int paddingLeft = DimenUtilKt.dip2px(Integer.valueOf(s.toString()));
+                            if (Math.abs(paddingLeft - view.getPaddingLeft()) >= DimenUtilKt.dip2px(1)) {
                                 view.setPadding(paddingLeft, view.getPaddingTop(), view.getPaddingRight(), view.getPaddingBottom());
                             }
                         } else if (item.type == EditTextItem.Type.TYPE_PADDING_RIGHT) {
                             View view = item.element.view;
-                            int paddingRight = dip2px(Integer.valueOf(s.toString()));
-                            if (Math.abs(paddingRight - view.getPaddingRight()) >= dip2px(1)) {
+                            int paddingRight = DimenUtilKt.dip2px(Integer.valueOf(s.toString()));
+                            if (Math.abs(paddingRight - view.getPaddingRight()) >= DimenUtilKt.dip2px(1)) {
                                 view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), paddingRight, view.getPaddingBottom());
                             }
                         } else if (item.type == EditTextItem.Type.TYPE_PADDING_TOP) {
                             View view = item.element.view;
-                            int paddingTop = dip2px(Integer.valueOf(s.toString()));
-                            if (Math.abs(paddingTop - view.getPaddingTop()) >= dip2px(1)) {
+                            int paddingTop = DimenUtilKt.dip2px(Integer.valueOf(s.toString()));
+                            if (Math.abs(paddingTop - view.getPaddingTop()) >= DimenUtilKt.dip2px(1)) {
                                 view.setPadding(view.getPaddingLeft(), paddingTop, view.getPaddingRight(), view.getPaddingBottom());
                             }
                         } else if (item.type == EditTextItem.Type.TYPE_PADDING_BOTTOM) {
                             View view = item.element.view;
-                            int paddingBottom = dip2px(Integer.valueOf(s.toString()));
-                            if (Math.abs(paddingBottom - view.getPaddingBottom()) >= dip2px(1)) {
+                            int paddingBottom = DimenUtilKt.dip2px(Integer.valueOf(s.toString()));
+                            if (Math.abs(paddingBottom - view.getPaddingBottom()) >= DimenUtilKt.dip2px(1)) {
                                 view.setPadding(view.getPaddingLeft(), view.getPaddingTop(), view.getPaddingRight(), paddingBottom);
                             }
                         }
@@ -551,7 +549,7 @@ public class AttrsDialog extends Dialog {
 
         public static class BitmapInfoViewHolder extends BaseViewHolder<BitmapItem> {
 
-            private final int imageHeight = dip2px(58);
+            private final int imageHeight = DimenUtilKt.dip2px(58);
 
             private TextView vName;
             private ImageView vImage;

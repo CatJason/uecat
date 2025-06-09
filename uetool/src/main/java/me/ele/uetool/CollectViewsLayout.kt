@@ -12,12 +12,12 @@ import android.view.WindowManager
 import android.widget.Toast
 import me.ele.uetool.base.Element
 import me.ele.uetool.base.ReflectionP
+import me.ele.uetool.base.dip2px
+import me.ele.uetool.base.getScreenHeight
+import me.ele.uetool.base.getScreenWidth
+import me.ele.uetool.base.px2dip
+import me.ele.uetool.base.sp2px
 import java.util.*
-import me.ele.uetool.base.DimenUtil.dip2px
-import me.ele.uetool.base.DimenUtil.getScreenHeight
-import me.ele.uetool.base.DimenUtil.getScreenWidth
-import me.ele.uetool.base.DimenUtil.px2dip
-import me.ele.uetool.base.DimenUtil.sp2px
 
 open class CollectViewsLayout : View {
     private val halfEndPointWidth = dip2px(2.5f)
@@ -182,7 +182,7 @@ open class CollectViewsLayout : View {
             if (context == targetActivity) {
                 return decorView
             } else if (context is ContextWrapper) {
-                context = (context as ContextWrapper).baseContext
+                context = context.baseContext
             } else {
                 return null
             }
