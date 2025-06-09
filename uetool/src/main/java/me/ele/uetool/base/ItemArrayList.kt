@@ -1,39 +1,32 @@
-package me.ele.uetool.base;
+package me.ele.uetool.base
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import me.ele.uetool.base.item.Item
+import java.util.*
 
-import me.ele.uetool.base.item.Item;
+class ItemArrayList<T : Item> : ArrayList<T>() {
 
-public class ItemArrayList<T extends Item> extends ArrayList<T> {
-
-    @Override
-    public boolean add(T t) {
-        if (!t.isValid()) {
-            return false;
+    override fun add(element: T): Boolean {
+        if (!element.isValid) {
+            return false
         }
-        return super.add(t);
+        return super.add(element)
     }
 
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
-        removeInvalidItem(c);
-        return super.addAll(c);
+    override fun addAll(elements: Collection<T>): Boolean {
+        val filtered = elements.toMutableList().apply { removeInvalidItems() }
+        return super.addAll(filtered)
     }
 
-    @Override
-    public boolean addAll(int index, Collection<? extends T> c) {
-        removeInvalidItem(c);
-        return super.addAll(index, c);
+    override fun addAll(index: Int, elements: Collection<T>): Boolean {
+        val filtered = elements.toMutableList().apply { removeInvalidItems() }
+        return super.addAll(index, filtered)
     }
 
-    private void removeInvalidItem(Collection<? extends T> c) {
-        Iterator<T> iterator = (Iterator<T>) c.iterator();
+    private fun MutableCollection<T>.removeInvalidItems() {
+        val iterator = iterator()
         while (iterator.hasNext()) {
-            T t = iterator.next();
-            if (!t.isValid()) {
-                iterator.remove();
+            if (!iterator.next().isValid) {
+                iterator.remove()
             }
         }
     }
