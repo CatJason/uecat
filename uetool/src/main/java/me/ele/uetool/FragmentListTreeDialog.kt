@@ -95,7 +95,7 @@ class FragmentListTreeDialog(context: Context) : Dialog(context), Provider {
         private lateinit var nameView: TextView
         private lateinit var arrowView: ImageView
 
-        override fun createNodeView(node: TreeNode, value: TreeItem): View {
+        override fun createNodeView(node: TreeNode?, value: TreeItem): View {
             val view = LayoutInflater.from(context).inflate(R.layout.uet_cell_tree, null, false)
 
             nameView = view.findViewById(R.id.name)

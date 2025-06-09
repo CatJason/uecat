@@ -1,284 +1,241 @@
-package me.ele.uetool.treeview.model;
+package me.ele.uetool.treeview.model
 
-import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
+import android.content.Context
+import android.view.View
+import android.view.ViewGroup
+import me.ele.uetool.R
+import me.ele.uetool.treeview.view.AndroidTreeView
+import me.ele.uetool.treeview.view.TreeNodeWrapperView
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+class TreeNode(value: Any?) {
+    private var mId = 0
+    private var mLastId = 0
+    private var mParent: TreeNode? = null
+    var isSelected = false
+    var isSelectable = true
+    private val children: MutableList<TreeNode> = ArrayList()
+    private var mViewHolder: BaseNodeViewHolder<*>? = null
+    private var mClickListener: TreeNodeClickListener? = null
+    private var mLongClickListener: TreeNodeLongClickListener? = null
+    private var mValue: Any? = value
+    var isExpanded = false
 
-import me.ele.uetool.R;
-import me.ele.uetool.treeview.view.AndroidTreeView;
-import me.ele.uetool.treeview.view.TreeNodeWrapperView;
+    companion object {
+        const val NODES_ID_SEPARATOR = ":"
 
-/**
- * Created by Bogdan Melnychuk on 2/10/15.
- */
-public class TreeNode {
-    public static final String NODES_ID_SEPARATOR = ":";
-
-    private int mId;
-    private int mLastId;
-    private TreeNode mParent;
-    private boolean mSelected;
-    private boolean mSelectable = true;
-    private final List<TreeNode> children;
-    private BaseNodeViewHolder mViewHolder;
-    private TreeNodeClickListener mClickListener;
-    private TreeNodeLongClickListener mLongClickListener;
-    private Object mValue;
-    private boolean mExpanded;
-
-    public static TreeNode root() {
-        TreeNode root = new TreeNode(null);
-        root.setSelectable(false);
-        return root;
-    }
-
-    private int generateId() {
-        return ++mLastId;
-    }
-
-    public TreeNode(Object value) {
-        children = new ArrayList<>();
-        mValue = value;
-    }
-
-    public TreeNode addChild(TreeNode childNode) {
-        childNode.mParent = this;
-        childNode.mId = generateId();
-        children.add(childNode);
-        return this;
-    }
-
-    public TreeNode addChildren(TreeNode... nodes) {
-        for (TreeNode n : nodes) {
-            addChild(n);
+        fun root(): TreeNode {
+            val root = TreeNode(null)
+            root.isSelectable = false
+            return root
         }
-        return this;
     }
 
-    public TreeNode addChildren(Collection<TreeNode> nodes) {
-        for (TreeNode n : nodes) {
-            addChild(n);
+    private fun generateId(): Int {
+        return ++mLastId
+    }
+
+    fun addChild(childNode: TreeNode): TreeNode {
+        childNode.mParent = this
+        childNode.mId = generateId()
+        children.add(childNode)
+        return this
+    }
+
+    fun addChildren(vararg nodes: TreeNode): TreeNode {
+        for (n in nodes) {
+            addChild(n)
         }
-        return this;
+        return this
     }
 
-    public int deleteChild(TreeNode child) {
-        for (int i = 0; i < children.size(); i++) {
-            if (child.mId == children.get(i).mId) {
-                children.remove(i);
-                return i;
+    fun addChildren(nodes: Collection<TreeNode>): TreeNode {
+        for (n in nodes) {
+            addChild(n)
+        }
+        return this
+    }
+
+    fun deleteChild(child: TreeNode): Int {
+        for (i in children.indices) {
+            if (child.mId == children[i].mId) {
+                children.removeAt(i)
+                return i
             }
         }
-        return -1;
+        return -1
     }
 
-    public List<TreeNode> getChildren() {
-        return Collections.unmodifiableList(children);
+    fun getChildren(): List<TreeNode> {
+        return Collections.unmodifiableList(children)
     }
 
-    public int size() {
-        return children.size();
+    fun size(): Int {
+        return children.size
     }
 
-    public TreeNode getParent() {
-        return mParent;
+    fun getParent(): TreeNode? {
+        return mParent
     }
 
-    public int getId() {
-        return mId;
+    fun getId(): Int {
+        return mId
     }
 
-    public boolean isLeaf() {
-        return size() == 0;
+    fun isLeaf(): Boolean {
+        return size() == 0
     }
 
-    public Object getValue() {
-        return mValue;
+    fun getValue(): Any? {
+        return mValue
     }
 
-    public boolean isExpanded() {
-        return mExpanded;
-    }
-
-    public TreeNode setExpanded(boolean expanded) {
-        mExpanded = expanded;
-        return this;
-    }
-
-    public void setSelected(boolean selected) {
-        mSelected = selected;
-    }
-
-    public boolean isSelected() {
-        return mSelectable && mSelected;
-    }
-
-    public void setSelectable(boolean selectable) {
-        mSelectable = selectable;
-    }
-
-    public boolean isSelectable() {
-        return mSelectable;
-    }
-
-    public String getPath() {
-        final StringBuilder path = new StringBuilder();
-        TreeNode node = this;
-        while (node.mParent != null) {
-            path.append(node.getId());
-            node = node.mParent;
-            if (node.mParent != null) {
-                path.append(NODES_ID_SEPARATOR);
+    fun getPath(): String {
+        val path = StringBuilder()
+        var node: TreeNode? = this
+        while (node?.mParent != null) {
+            path.append(node.getId())
+            node = node.mParent
+            if (node?.mParent != null) {
+                path.append(NODES_ID_SEPARATOR)
             }
         }
-        return path.toString();
+        return path.toString()
     }
 
-
-    public int getLevel() {
-        int level = 0;
-        TreeNode root = this;
-        while (root.mParent != null) {
-            root = root.mParent;
-            level++;
+    fun getLevel(): Int {
+        var level = 0
+        var root: TreeNode? = this
+        while (root?.mParent != null) {
+            root = root.mParent
+            level++
         }
-        return level;
+        return level
     }
 
-    public boolean isLastChild() {
+    fun isLastChild(): Boolean {
         if (!isRoot()) {
-            int parentSize = mParent.children.size();
+            val parentSize = mParent!!.children.size
             if (parentSize > 0) {
-                final List<TreeNode> parentChildren = mParent.children;
-                return parentChildren.get(parentSize - 1).mId == mId;
+                val parentChildren = mParent!!.children
+                return parentChildren[parentSize - 1].mId == mId
             }
         }
-        return false;
+        return false
     }
 
-    public TreeNode setViewHolder(BaseNodeViewHolder viewHolder) {
-        mViewHolder = viewHolder;
+    fun setViewHolder(viewHolder: BaseNodeViewHolder<*>?): TreeNode {
+        mViewHolder = viewHolder
         if (viewHolder != null) {
-            viewHolder.mNode = this;
+            viewHolder.setNode(this)
         }
-        return this;
+        return this
     }
 
-    public TreeNode setClickListener(TreeNodeClickListener listener) {
-        mClickListener = listener;
-        return this;
+    fun setClickListener(listener: TreeNodeClickListener?): TreeNode {
+        mClickListener = listener
+        return this
     }
 
-    public TreeNodeClickListener getClickListener() {
-        return this.mClickListener;
+    fun getClickListener(): TreeNodeClickListener? {
+        return mClickListener
     }
 
-    public TreeNode setLongClickListener(TreeNodeLongClickListener listener) {
-        mLongClickListener = listener;
-        return this;
+    fun setLongClickListener(listener: TreeNodeLongClickListener?): TreeNode {
+        mLongClickListener = listener
+        return this
     }
 
-    public TreeNodeLongClickListener getLongClickListener() {
-        return mLongClickListener;
+    fun getLongClickListener(): TreeNodeLongClickListener? {
+        return mLongClickListener
     }
 
-    public BaseNodeViewHolder getViewHolder() {
-        return mViewHolder;
+    fun getViewHolder(): BaseNodeViewHolder<*>? {
+        return mViewHolder
     }
 
-    public boolean isFirstChild() {
+    fun isFirstChild(): Boolean {
         if (!isRoot()) {
-            List<TreeNode> parentChildren = mParent.children;
-            return parentChildren.get(0).mId == mId;
+            val parentChildren = mParent!!.children
+            return parentChildren[0].mId == mId
         }
-        return false;
+        return false
     }
 
-    public boolean isRoot() {
-        return mParent == null;
+    fun isRoot(): Boolean {
+        return mParent == null
     }
 
-    public TreeNode getRoot() {
-        TreeNode root = this;
-        while (root.mParent != null) {
-            root = root.mParent;
+    fun getRoot(): TreeNode? {
+        var root: TreeNode? = this
+        while (root?.mParent != null) {
+            root = root.mParent
         }
-        return root;
+        return root
     }
 
-    public interface TreeNodeClickListener {
-        void onClick(TreeNode node, Object value);
+    interface TreeNodeClickListener {
+        fun onClick(node: TreeNode, value: Any?)
     }
 
-    public interface TreeNodeLongClickListener {
-        boolean onLongClick(TreeNode node, Object value);
+    interface TreeNodeLongClickListener {
+        fun onLongClick(node: TreeNode, value: Any?): Boolean
     }
 
-    public static abstract class BaseNodeViewHolder<E> {
-        protected AndroidTreeView tView;
-        protected TreeNode mNode;
-        private View mView;
-        protected int containerStyle;
-        protected Context context;
+    abstract class BaseNodeViewHolder<E>(protected val context: Context) {
+        protected var tView: AndroidTreeView? = null
+        private var mNode: TreeNode? = null
+        private var mView: View? = null
+        var containerStyle = 0
 
-        public BaseNodeViewHolder(Context context) {
-            this.context = context;
+        fun setNode(node: TreeNode) {
+            mNode = node
         }
 
-        public View getView() {
+        fun getView(): View? {
             if (mView != null) {
-                return mView;
+                return mView
             }
-            final View nodeView = getNodeView();
-            final TreeNodeWrapperView nodeWrapperView = new TreeNodeWrapperView(nodeView.getContext(), getContainerStyle());
-            nodeWrapperView.insertNodeView(nodeView);
-            mView = nodeWrapperView;
-
-            return mView;
+            val nodeView = getNodeView()
+            val nodeWrapperView = TreeNodeWrapperView(nodeView.context, containerStyle)
+            nodeWrapperView.insertNodeView(nodeView)
+            mView = nodeWrapperView
+            return mView
         }
 
-        public void setTreeViev(AndroidTreeView treeViev) {
-            this.tView = treeViev;
+        fun setTreeViev(treeViev: AndroidTreeView) {
+            tView = treeViev
         }
 
-        public AndroidTreeView getTreeView() {
-            return tView;
+        fun getTreeView(): AndroidTreeView? {
+            return tView
         }
 
-        public void setContainerStyle(int style) {
-            containerStyle = style;
+        fun getNodeView(): View {
+            return createNodeView(mNode, mNode?.getValue() as E)
         }
 
-        public View getNodeView() {
-            return createNodeView(mNode, (E) mNode.getValue());
+        open fun getNodeItemsView(): ViewGroup {
+            return getView()!!.findViewById(R.id.node_items)
         }
 
-        public ViewGroup getNodeItemsView() {
-            return (ViewGroup) getView().findViewById(R.id.node_items);
+        fun isInitialized(): Boolean {
+            return mView != null
         }
 
-        public boolean isInitialized() {
-            return mView != null;
-        }
+        abstract fun createNodeView(node: TreeNode?, value: E): View
 
-        public int getContainerStyle() {
-            return containerStyle;
-        }
-
-
-        public abstract View createNodeView(TreeNode node, E value);
-
-        public void toggle(boolean active) {
+        open fun toggle(active: Boolean) {
             // empty
         }
 
-        public void toggleSelectionMode(boolean editModeEnabled) {
+        open fun toggleSelectionMode(editModeEnabled: Boolean) {
             // empty
+        }
+
+        // Java兼容的getter
+        fun getValue(): Any? {
+            return mNode?.getValue()
         }
     }
 }

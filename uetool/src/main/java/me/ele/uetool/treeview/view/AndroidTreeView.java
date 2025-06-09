@@ -343,7 +343,7 @@ public class AndroidTreeView {
     private List<TreeNode> getSelected(TreeNode parent) {
         List<TreeNode> result = new ArrayList<>();
         for (TreeNode n : parent.getChildren()) {
-            if (n.isSelected()) {
+            if (n.isSelectable() && n.isSelected()) {
                 result.add(n);
             }
             result.addAll(getSelected(n));

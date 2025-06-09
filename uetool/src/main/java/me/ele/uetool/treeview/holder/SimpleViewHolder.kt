@@ -7,7 +7,7 @@ import me.ele.uetool.treeview.model.TreeNode
 
 class SimpleViewHolder(context: Context) : TreeNode.BaseNodeViewHolder<Any>(context) {
 
-    override fun createNodeView(node: TreeNode, value: Any): View {
+    override fun createNodeView(node: TreeNode?, value: Any): View {
         val tv = TextView(context)
         tv.text = value.toString()
         return tv
