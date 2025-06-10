@@ -8,7 +8,7 @@ import android.widget.Switch
 import android.widget.TextView
 import me.ele.uetool.base.item.SwitchItem
 
-class SwitchViewHolder(itemView: View, private val callback: AttrsDialog.AttrDialogCallback?) : AttrsDialog.Adapter.BaseViewHolder<SwitchItem>(itemView) {
+class SwitchViewHolder(itemView: View, private val callback: AttrDialogCallback?) : AttrsDialog.Adapter.BaseViewHolder<SwitchItem>(itemView) {
     private val vName: TextView = itemView.findViewById(R.id.name)
     private val vSwitch: Switch = itemView.findViewById(R.id.switch_view)
 
@@ -46,7 +46,7 @@ class SwitchViewHolder(itemView: View, private val callback: AttrsDialog.AttrDia
     }
 
     companion object {
-        fun newInstance(parent: ViewGroup, callback: AttrsDialog.AttrDialogCallback?): SwitchViewHolder {
+        fun newInstance(parent: ViewGroup, callback: AttrDialogCallback?): SwitchViewHolder {
             return SwitchViewHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.uet_cell_switch, parent, false),

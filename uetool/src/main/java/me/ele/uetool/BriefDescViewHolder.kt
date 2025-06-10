@@ -14,7 +14,7 @@ import me.ele.uetool.base.item.BriefDescItem
 import me.ele.uetool.cat.extractAfterLastDot
 import me.ele.uetool.cat.getViewLayer
 
-class BriefDescViewHolder(itemView: View, private val callback: AttrsDialog.AttrDialogCallback?) : AttrsDialog.Adapter.BaseViewHolder<BriefDescItem>(itemView) {
+class BriefDescViewHolder(itemView: View, private val callback: AttrDialogCallback?) : AttrsDialog.Adapter.BaseViewHolder<BriefDescItem>(itemView) {
     private val vDesc: TextView = itemView as TextView
 
     init {
@@ -24,7 +24,7 @@ class BriefDescViewHolder(itemView: View, private val callback: AttrsDialog.Attr
     }
 
     companion object {
-        fun newInstance(parent: ViewGroup, callback: AttrsDialog.AttrDialogCallback?): BriefDescViewHolder {
+        fun newInstance(parent: ViewGroup, callback: AttrDialogCallback?): BriefDescViewHolder {
             return BriefDescViewHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.uet_cell_brief_view_desc, parent, false),

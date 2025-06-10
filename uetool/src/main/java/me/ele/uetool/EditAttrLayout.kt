@@ -151,7 +151,7 @@ class EditAttrLayout @JvmOverloads constructor(
 
                 if (dialog == null) {
                     dialog = AttrsDialog(context).apply {
-                        setAttrDialogCallback(object : AttrsDialog.AttrDialogCallback {
+                        setAttrDialogCallback(object : AttrDialogCallback {
                             override fun enableMove() {
                                 mode = MoveMode()
                                 dismissAttrsDialog()
