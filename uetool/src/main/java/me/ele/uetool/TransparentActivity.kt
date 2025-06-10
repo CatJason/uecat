@@ -1,14 +1,13 @@
 package me.ele.uetool
 
-import android.annotation.SuppressLint
+import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.children
 
-class TransparentActivity : AppCompatActivity() {
+class TransparentActivity : Activity() {
 
     companion object {
         const val EXTRA_TYPE = "extra_type"
@@ -27,9 +26,7 @@ class TransparentActivity : AppCompatActivity() {
 
     private lateinit var vContainer: ViewGroup
     private var type: Int = TYPE_UNKNOWN
-    private val initialTouch = FloatArray(2)
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
@@ -43,8 +40,13 @@ class TransparentActivity : AppCompatActivity() {
     }
 
     private fun setupWindow() {
-        setStatusBarColor(window, Color.TRANSPARENT)
-        enableFullscreen(window)
+        window.apply {
+            statusBarColor = Color.TRANSPARENT
+            setFlags(
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
+            )
+        }
     }
 
     private fun initializeViews() {
@@ -65,10 +67,6 @@ class TransparentActivity : AppCompatActivity() {
     }
 
     private fun setupFeatureViews() {
-        addFeatureView()
-    }
-
-    private fun addFeatureView() {
         when (type) {
             TYPE_EDIT_ATTR -> setupEditAttrLayout()
             TYPE_RELATIVE_POSITION -> setupRelativePositionLayout()
@@ -95,18 +93,9 @@ class TransparentActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        finish()
-    }
-
     fun dismissAttrsDialog() {
-        vContainer.children.filterIsInstance<EditAttrLayout>().forEach {
-            it.dismissAttrsDialog()
+        for (i in 0 until vContainer.childCount) {
+            (vContainer.getChildAt(i) as? EditAttrLayout)?.dismissAttrsDialog()
         }
     }
 }

@@ -2,19 +2,13 @@ package me.ele.uetool;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.style.StrikethroughSpan;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -24,12 +18,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.text.style.ForegroundColorSpan;
 import java.util.ArrayList;
 import java.util.List;
-
 import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder;
 import me.ele.uetool.attrdialog.AttrsDialogMultiTypePool;
 import me.ele.uetool.base.DimenUtilKt;
@@ -37,22 +29,16 @@ import me.ele.uetool.base.Element;
 import me.ele.uetool.base.IAttrs;
 import me.ele.uetool.base.ItemArrayList;
 import me.ele.uetool.base.item.AddMinusEditItem;
-import me.ele.uetool.base.item.BitmapItem;
 import me.ele.uetool.base.item.BriefDescItem;
 import me.ele.uetool.base.item.EditTextItem;
 import me.ele.uetool.base.item.Item;
 import me.ele.uetool.base.item.SwitchItem;
 import me.ele.uetool.base.item.TextItem;
 import me.ele.uetool.base.item.TitleItem;
-import me.ele.uetool.cat.StringUtilKt;
-import me.ele.uetool.cat.ViewXRayKt;
-
 import static me.ele.uetool.UtilsKt.clipText;
-import static me.ele.uetool.UtilsKt.getResourceName;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -493,192 +479,5 @@ public class AttrsDialog extends Dialog {
             }
         }
 
-        public static class SwitchViewHolder extends BaseViewHolder<SwitchItem> {
-
-            private TextView vName;
-            private SwitchCompat vSwitch;
-
-            public SwitchViewHolder(View itemView, final AttrDialogCallback callback) {
-                super(itemView);
-
-                vName = itemView.findViewById(R.id.name);
-                vSwitch = itemView.findViewById(R.id.switch_view);
-                vSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        try {
-                            if (item.getType() == SwitchItem.Type.TYPE_MOVE) {
-                                if (callback != null && isChecked) {
-                                    callback.enableMove();
-                                }
-                                return;
-                            } else if (item.getType() == SwitchItem.Type.TYPE_SHOW_VALID_VIEWS) {
-                                if(item.isChecked != isChecked) {
-                                    item.isChecked = isChecked;
-                                    if (callback != null) {
-                                        callback.showValidViews(getAdapterPosition(), isChecked);
-                                    }
-                                }
-                                return;
-                            }
-                            if (item.element.view instanceof TextView) {
-                                TextView textView = ((TextView) (item.element.view));
-                                if (item.getType() == SwitchItem.Type.TYPE_IS_BOLD) {
-                                    Typeface tf = Typeface.create(textView.getTypeface(), isChecked ? Typeface.BOLD : Typeface.NORMAL);
-                                    textView.setTypeface(tf);
-                                }
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-
-            public static SwitchViewHolder newInstance(ViewGroup parent, AttrDialogCallback callback) {
-                return new SwitchViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.uet_cell_switch, parent, false), callback);
-            }
-
-            @Override
-            public void bindView(SwitchItem switchItem) {
-                super.bindView(switchItem);
-                vName.setText(switchItem.name);
-                vSwitch.setChecked(switchItem.isChecked);
-            }
-        }
-
-        public static class BitmapInfoViewHolder extends BaseViewHolder<BitmapItem> {
-
-            private final int imageHeight = DimenUtilKt.dip2px(58);
-
-            private TextView vName;
-            private ImageView vImage;
-            private TextView vInfo;
-
-            public BitmapInfoViewHolder(View itemView) {
-                super(itemView);
-
-                vName = itemView.findViewById(R.id.name);
-                vImage = itemView.findViewById(R.id.image);
-                vInfo = itemView.findViewById(R.id.info);
-            }
-
-            public static BitmapInfoViewHolder newInstance(ViewGroup parent) {
-                return new BitmapInfoViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.uet_cell_bitmap_info, parent, false));
-            }
-
-            @Override
-            public void bindView(BitmapItem bitmapItem) {
-                super.bindView(bitmapItem);
-
-                vName.setText(bitmapItem.name);
-                Bitmap bitmap = bitmapItem.bitmap;
-
-                int height = Math.min(bitmap.getHeight(), imageHeight);
-                int width = (int) ((float) height / bitmap.getHeight() * bitmap.getWidth());
-
-                ViewGroup.LayoutParams layoutParams = vImage.getLayoutParams();
-                layoutParams.width = width;
-                layoutParams.height = height;
-                vImage.setImageBitmap(bitmap);
-                vInfo.setText(bitmap.getWidth() + "px*" + bitmap.getHeight() + "px");
-            }
-        }
-
-        public static class BriefDescViewHolder extends BaseViewHolder<BriefDescItem> {
-
-            private TextView vDesc;
-
-            public BriefDescViewHolder(View itemView, final AttrDialogCallback callback) {
-                super(itemView);
-                vDesc = (TextView) itemView;
-                vDesc.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (callback != null) {
-                            callback.selectView(item.element);
-                        }
-                    }
-                });
-            }
-
-            public static BriefDescViewHolder newInstance(ViewGroup parent, AttrDialogCallback callback) {
-                return new BriefDescViewHolder(
-                        LayoutInflater.from(parent.getContext())
-                                .inflate(
-                                        R.layout.uet_cell_brief_view_desc,
-                                        parent,
-                                        false
-                                ),
-                        callback
-                );
-            }
-
-            private static boolean isSystemClass(View view) {
-                if (view == null) {
-                    return false;
-                }
-
-                String className = view.getClass().getName();
-                // 检查类名是否以 "android." 开头
-                return className.startsWith("android.") || className.startsWith("com.android");
-            }
-
-            @Override
-            public void bindView(BriefDescItem briefDescItem) {
-                super.bindView(briefDescItem);
-                View view = briefDescItem.element.view;
-                String resName = getResourceName(view.getId());
-
-                // 创建带样式的文本
-                SpannableString spannableText = buildDisplayTextWithStyles(view, resName);
-
-                // 设置带样式的文本到 TextView
-                vDesc.setText(spannableText);
-                vDesc.setSelected(briefDescItem.isSelected);
-                vDesc.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
-            }
-
-            private SpannableString buildDisplayTextWithStyles(View view, String resName) {
-                StringBuilder sb = new StringBuilder();
-
-                // 添加空格缩进
-                int numberOfSpaces = ViewXRayKt.getViewLayer(view) * 2;
-                sb.append("  ".repeat(Math.max(0, numberOfSpaces)));
-
-                // 添加类别前缀和类名
-                sb.append(numberOfSpaces > 0 ? "└ " : "")
-                        .append(isSystemClass(view) ? "[系统] " : "[自定义] ")
-                        .append(StringUtilKt.extractAfterLastDot(view.getClass().getName()));
-
-                // 添加资源名称（如果存在）
-                if (!TextUtils.isEmpty(resName)) {
-                    sb.append(" (@+id/").append(resName).append(")");
-                } else {
-                    sb.append(" (未设置 id)");
-                }
-
-                return applySpannableStyles(sb.toString(), resName);
-            }
-
-            private SpannableString applySpannableStyles(String text, String resName) {
-                SpannableString spannableString = new SpannableString(text);
-
-                // 如果资源名称存在，则应用绿色前景色
-                if (!TextUtils.isEmpty(resName)) {
-                    int start = text.indexOf("(@+id/");
-                    int end = start + resName.length() + 6; // 加上 "(@+id/" 和 ")" 的长度
-                    spannableString.setSpan(new ForegroundColorSpan(Color.GREEN), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                } else {
-                    // 否则，对 "(未设置 id)" 应用黄色删除线
-                    int start = text.indexOf("(未设置 id)");
-                    int end = start + "(未设置 id)".length();
-                    spannableString.setSpan(new StrikethroughSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                    spannableString.setSpan(new ForegroundColorSpan(Color.YELLOW), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                }
-
-                return spannableString;
-            }
-        }
     }
 }
