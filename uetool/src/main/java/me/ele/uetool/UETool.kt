@@ -207,12 +207,13 @@ object UETool {
     /**
      * 请求悬浮窗权限（API 23+）
      */
-    @TargetApi(Build.VERSION_CODES.M)
     private fun requestPermission(context: Context) {
-        Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            Uri.parse("package:${context.packageName}"))
-            .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
-            .let { context.startActivity(it) }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:${context.packageName}"))
+                .apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+                .let { context.startActivity(it) }
+        }
     }
     // endregion
 }
