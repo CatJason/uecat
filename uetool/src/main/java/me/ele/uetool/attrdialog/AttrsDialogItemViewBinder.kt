@@ -4,6 +4,7 @@ import androidx.recyclerview.widget.RecyclerView
 import me.ele.uetool.AttrDialogCallback
 import me.ele.uetool.AttrsDialog
 import me.ele.uetool.BaseViewHolder
+import me.ele.uetool.UEAdapter
 import me.ele.uetool.base.ItemViewBinder
 import me.ele.uetool.base.item.Item
 
@@ -14,5 +15,5 @@ import me.ele.uetool.base.item.Item
 abstract class AttrsDialogItemViewBinder<T : Item, VH : BaseViewHolder<T>> : ItemViewBinder<T, VH> {
 
     protected fun getAttrDialogCallback(adapter: RecyclerView.Adapter<*>): AttrDialogCallback? =
-        (adapter as? AttrsDialog.Adapter)?.attrDialogCallback
+        (adapter as? UEAdapter)?.attrDialogCallback
 }
