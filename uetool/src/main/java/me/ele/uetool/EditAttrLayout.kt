@@ -163,7 +163,7 @@ class EditAttrLayout @JvmOverloads constructor(
                                     notifyValidViewItemInserted(
                                         positionStart,
                                         getTargetElements(lastX, lastY),
-                                        targetElement
+                                        targetElement!!
                                     )
                                 } else {
                                     notifyItemRangeRemoved(positionStart)
@@ -185,7 +185,7 @@ class EditAttrLayout @JvmOverloads constructor(
                         }
                     }
                 }
-                dialog?.show(targetElement)
+                dialog?.show(targetElement!!)
             }
         }
     }

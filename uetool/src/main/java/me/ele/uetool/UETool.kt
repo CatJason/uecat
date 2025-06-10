@@ -61,18 +61,18 @@ object UETool {
      * 属性对话框多类型池（懒加载）
      * 注册了各种Item类型对应的ViewBinder
      */
-    val attrsDialogMultiTypePool by lazy {
-        AttrsDialogMultiTypePool().apply {
-            // 注册各种Item类型与对应的ViewBinder
-            register(AddMinusEditItem::class.java, AddMinusEditTextItemBinder()) // 加减编辑框
-            register(BitmapItem::class.java, BitmapItemBinder())                 // 图片项
-            register(BriefDescItem::class.java, BriefDescItemBinder())            // 简要描述
-            register(EditTextItem::class.java, EditTextItemBinder())            // 编辑框
-            register(SwitchItem::class.java, SwitchItemBinder())                 // 开关
-            register(TextItem::class.java, TextItemBinder())                     // 文本
-            register(TitleItem::class.java, TitleItemBinder())                   // 标题
-        }
+
+    val attrsDialogMultiTypePool = AttrsDialogMultiTypePool().apply {
+        // 注册各种Item类型与对应的ViewBinder
+        register(AddMinusEditItem::class.java, AddMinusEditTextItemBinder()) // 加减编辑框
+        register(BitmapItem::class.java, BitmapItemBinder())                 // 图片项
+        register(BriefDescItem::class.java, BriefDescItemBinder())            // 简要描述
+        register(EditTextItem::class.java, EditTextItemBinder())            // 编辑框
+        register(SwitchItem::class.java, SwitchItemBinder())                 // 开关
+        register(TextItem::class.java, TextItemBinder())                     // 文本
+        register(TitleItem::class.java, TitleItemBinder())                   // 标题
     }
+
     // endregion
 
     // region 公共API

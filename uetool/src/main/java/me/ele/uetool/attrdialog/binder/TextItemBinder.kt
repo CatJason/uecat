@@ -3,7 +3,6 @@ package me.ele.uetool.attrdialog.binder
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import me.ele.uetool.AttrsDialog
 import me.ele.uetool.TextViewHolder
 import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder
 import me.ele.uetool.base.item.TextItem
