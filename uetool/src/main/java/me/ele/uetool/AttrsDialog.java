@@ -3,7 +3,6 @@ package me.ele.uetool;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Html;
@@ -16,9 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +31,7 @@ import me.ele.uetool.base.item.EditTextItem;
 import me.ele.uetool.base.item.Item;
 import me.ele.uetool.base.item.SwitchItem;
 import me.ele.uetool.base.item.TextItem;
-import me.ele.uetool.base.item.TitleItem;
 import static me.ele.uetool.UtilsKt.clipText;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -170,14 +165,6 @@ public class AttrsDialog extends Dialog {
         adapter.setAttrDialogCallback(callback);
     }
 
-    public interface AttrDialogCallback {
-        void enableMove();
-
-        void showValidViews(int position, boolean isChecked);
-
-        void selectView(Element element);
-    }
-
     public static class Adapter extends RecyclerView.Adapter {
 
         private List<Item> items = new ItemArrayList<>();
@@ -260,26 +247,6 @@ public class AttrsDialog extends Dialog {
 
             public void bindView(T t) {
                 item = t;
-            }
-        }
-
-        public static class TitleViewHolder extends BaseViewHolder<TitleItem> {
-
-            private TextView vTitle;
-
-            public TitleViewHolder(View itemView) {
-                super(itemView);
-                vTitle = itemView.findViewById(R.id.title);
-            }
-
-            public static TitleViewHolder newInstance(ViewGroup parent) {
-                return new TitleViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.uet_cell_title, parent, false));
-            }
-
-            @Override
-            public void bindView(TitleItem titleItem) {
-                super.bindView(titleItem);
-                vTitle.setText(titleItem.name);
             }
         }
 
