@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import me.ele.uetool.base.item.TitleItem
 
-class TitleViewHolder(itemView: View) : AttrsDialog.Adapter.BaseViewHolder<TitleItem>(itemView) {
+class TitleViewHolder(itemView: View) : BaseViewHolder<TitleItem>(itemView) {
     private val vTitle: TextView = itemView.findViewById(R.id.title)
 
     companion object {

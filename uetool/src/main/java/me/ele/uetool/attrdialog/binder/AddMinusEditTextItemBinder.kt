@@ -3,7 +3,7 @@ package me.ele.uetool.attrdialog.binder
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import me.ele.uetool.AttrsDialog
+import me.ele.uetool.AddMinusEditViewHolder
 import me.ele.uetool.attrdialog.AttrsDialogItemViewBinder
 import me.ele.uetool.base.item.AddMinusEditItem
 
@@ -11,10 +11,10 @@ import me.ele.uetool.base.item.AddMinusEditItem
  * @author weishenhong <a href="mailto:weishenhong@bytedance.com">contact me.</a>
  * @date 2019-07-08 23:46
  */
-class AddMinusEditTextItemBinder : AttrsDialogItemViewBinder<AddMinusEditItem, AttrsDialog.Adapter.AddMinusEditViewHolder>() {
+class AddMinusEditTextItemBinder : AttrsDialogItemViewBinder<AddMinusEditItem, AddMinusEditViewHolder>() {
 
     override fun onBindViewHolder(
-        holder: AttrsDialog.Adapter.AddMinusEditViewHolder,
+        holder: AddMinusEditViewHolder,
         item: AddMinusEditItem
     ) {
         holder.bindView(item)
@@ -24,7 +24,7 @@ class AddMinusEditTextItemBinder : AttrsDialogItemViewBinder<AddMinusEditItem, A
         inflater: LayoutInflater,
         parent: ViewGroup,
         adapter: RecyclerView.Adapter<*>
-    ): AttrsDialog.Adapter.AddMinusEditViewHolder {
-        return AttrsDialog.Adapter.AddMinusEditViewHolder.newInstance(parent)
+    ): AddMinusEditViewHolder {
+        return AddMinusEditViewHolder.newInstance(parent)
     }
 }

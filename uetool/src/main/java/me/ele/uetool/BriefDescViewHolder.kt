@@ -14,12 +14,14 @@ import me.ele.uetool.base.item.BriefDescItem
 import me.ele.uetool.cat.extractAfterLastDot
 import me.ele.uetool.cat.getViewLayer
 
-class BriefDescViewHolder(itemView: View, private val callback: AttrDialogCallback?) : AttrsDialog.Adapter.BaseViewHolder<BriefDescItem>(itemView) {
+class BriefDescViewHolder(itemView: View, private val callback: AttrDialogCallback?) : BaseViewHolder<BriefDescItem>(itemView) {
     private val vDesc: TextView = itemView as TextView
 
     init {
         vDesc.setOnClickListener {
-            callback?.selectView(item.element)
+            item?.element?.let {
+                callback?.selectView(it)
+            }
         }
     }
 

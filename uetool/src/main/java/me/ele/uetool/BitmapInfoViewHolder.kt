@@ -9,7 +9,7 @@ import me.ele.uetool.base.dip2px
 import me.ele.uetool.base.item.BitmapItem
 import kotlin.math.min
 
-class BitmapInfoViewHolder(itemView: View) : AttrsDialog.Adapter.BaseViewHolder<BitmapItem>(itemView) {
+class BitmapInfoViewHolder(itemView: View) : BaseViewHolder<BitmapItem>(itemView) {
     private val imageHeight = dip2px(58f)
     private val vName: TextView = itemView.findViewById(R.id.name)
     private val vImage: ImageView = itemView.findViewById(R.id.image)
