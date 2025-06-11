@@ -126,9 +126,7 @@ class TreeNode(value: Any?) {
 
     fun setViewHolder(viewHolder: BaseNodeViewHolder<*>?): TreeNode {
         mViewHolder = viewHolder
-        if (viewHolder != null) {
-            viewHolder.setNode(this)
-        }
+        viewHolder?.setNode(this)
         return this
     }
 
@@ -196,7 +194,7 @@ class TreeNode(value: Any?) {
             if (mView != null) {
                 return mView
             }
-            val nodeView = getNodeView()
+            val nodeView = getNodeView()?: return null
             val nodeWrapperView = TreeNodeWrapperView(nodeView.context, containerStyle)
             nodeWrapperView.insertNodeView(nodeView)
             mView = nodeWrapperView
@@ -211,7 +209,7 @@ class TreeNode(value: Any?) {
             return tView
         }
 
-        fun getNodeView(): View {
+        fun getNodeView(): View? {
             return createNodeView(mNode, mNode?.getValue() as E)
         }
 
@@ -223,7 +221,7 @@ class TreeNode(value: Any?) {
             return mView != null
         }
 
-        abstract fun createNodeView(node: TreeNode?, value: E): View
+        abstract fun createNodeView(node: TreeNode?, value: E): View?
 
         open fun toggle(active: Boolean) {
             // empty
