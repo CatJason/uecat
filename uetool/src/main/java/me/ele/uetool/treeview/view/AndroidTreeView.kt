@@ -359,19 +359,24 @@ class AndroidTreeView(private val mContext: Context) {
     }
 
     companion object {
-        private fun expand(v: View) {
-            v.measure(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-            val targetHeight = v.measuredHeight
+        private fun expand(viewToExpand: View) {
+            viewToExpand.measure(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            val targetHeight = viewToExpand.measuredHeight
 
-            v.layoutParams.height = 0
-            v.visibility = View.VISIBLE
-            val a = object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
-                    v.layoutParams.height = if (interpolatedTime == 1f)
+            viewToExpand.layoutParams.height = 0
+            viewToExpand.visibility = View.VISIBLE
+
+            val expandAnimation = object : Animation() {
+                override fun applyTransformation(interpolatedTime: Float, transformation: Transformation) {
+                    viewToExpand.layoutParams.height = if (interpolatedTime == 1f) {
                         LinearLayout.LayoutParams.WRAP_CONTENT
-                    else
+                    } else {
                         (targetHeight * interpolatedTime).toInt()
-                    v.requestLayout()
+                    }
+                    viewToExpand.requestLayout()
                 }
 
                 override fun willChangeBounds(): Boolean {
@@ -379,21 +384,22 @@ class AndroidTreeView(private val mContext: Context) {
                 }
             }
 
-            // 1dp/ms
-            a.duration = (targetHeight / v.context.resources.displayMetrics.density).toLong()
-            v.startAnimation(a)
+            // 1dp/ms animation speed
+            expandAnimation.duration = (targetHeight / viewToExpand.context.resources.displayMetrics.density).toLong()
+            viewToExpand.startAnimation(expandAnimation)
         }
 
-        private fun collapse(v: View) {
-            val initialHeight = v.measuredHeight
+        private fun collapse(viewToCollapse: View) {
+            val initialHeight = viewToCollapse.measuredHeight
 
-            val a = object : Animation() {
-                override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
+            val collapseAnimation = object : Animation() {
+                override fun applyTransformation(interpolatedTime: Float, transformation: Transformation) {
                     if (interpolatedTime == 1f) {
-                        v.visibility = View.GONE
+                        viewToCollapse.visibility = View.GONE
                     } else {
-                        v.layoutParams.height = initialHeight - (initialHeight * interpolatedTime).toInt()
-                        v.requestLayout()
+                        viewToCollapse.layoutParams.height =
+                            initialHeight - (initialHeight * interpolatedTime).toInt()
+                        viewToCollapse.requestLayout()
                     }
                 }
 
@@ -402,9 +408,10 @@ class AndroidTreeView(private val mContext: Context) {
                 }
             }
 
-            // 1dp/ms
-            a.duration = (initialHeight / v.context.resources.displayMetrics.density).toLong()
-            v.startAnimation(a)
+            // 1dp/ms animation speed
+            collapseAnimation.duration =
+                (initialHeight / viewToCollapse.context.resources.displayMetrics.density).toLong()
+            viewToCollapse.startAnimation(collapseAnimation)
         }
     }
 
