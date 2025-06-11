@@ -63,6 +63,7 @@ public class UEAdapter extends RecyclerView.Adapter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         AttrsDialogMultiTypePool pool = UETool.INSTANCE.getAttrsDialogMultiTypePool();
         ((AttrsDialogItemViewBinder) pool.getItemViewBinder(holder.getItemViewType())).onBindViewHolder(holder, getItem(position));
