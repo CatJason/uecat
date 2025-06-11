@@ -2,7 +2,6 @@ package me.ele.uetool.attrdialog
 
 import androidx.recyclerview.widget.RecyclerView
 import me.ele.uetool.AttrDialogCallback
-import me.ele.uetool.AttrsDialog
 import me.ele.uetool.BaseViewHolder
 import me.ele.uetool.UEAdapter
 import me.ele.uetool.base.ItemViewBinder
