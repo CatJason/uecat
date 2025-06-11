@@ -42,7 +42,6 @@ object UETool {
     // 属性提供器类名列表（线程安全），默认包含核心实现
     private val attrsProviderSet = CopyOnWriteArrayList<String>().apply {
         add(UETCore::class.java.name)          // 默认核心属性提供器
-        add("me.ele.uetool.fresco.UETFresco") // Fresco 图片库支持
     }
     // endregion
 

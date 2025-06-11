@@ -145,6 +145,11 @@ class UETMenu @JvmOverloads constructor(
             override fun onAnimationEnd(animation: Animator) {
                 if (!isOpen) {
                     vSubMenuContainer.visibility = GONE
+                    val currentTopActivity = getCurrentActivity() ?: return
+
+                    if (currentTopActivity.javaClass == TransparentActivity::class.java) {
+                        currentTopActivity.finish()
+                    }
                 }
             }
         })
