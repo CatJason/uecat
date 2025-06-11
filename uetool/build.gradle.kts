@@ -84,7 +84,6 @@ afterEvaluate {
 }
 
 dependencies {
-    implementation("com.github.tiann:FreeReflection:3.1.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.appcompat:appcompat:1.5.0")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.6.21")
